@@ -1,0 +1,77 @@
+
+:root {
+  /* Colors - Premium Dark Theme */
+  --color-bg: #0f1115;
+  --color-surface: #181b21;
+  --color-surface-hover: #232730;
+  --color-text-primary: #f0f0f0;
+  --color-text-secondary: #a0a0a0;
+  
+  --color-primary: #d4af37; /* Gold */
+  --color-primary-hover: #f0c440;
+  --color-accent: #ff6b6b; /* Soft Red for scores/badges */
+  
+  --color-border: #2a2e37;
+  
+  /* Grades */
+  --grade-a: #03a65a;
+  --grade-b: #85bb2f;
+  --grade-c: #ffc900;
+  --grade-d: #ee8100;
+  --grade-e: #e63e11;
+
+  /* Typography */
+  --font-family-heading: 'Playfair Display', serif;
+  --font-family-body: 'Inter', sans-serif;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  
+  /* Radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.3);
+  --shadow-glow: 0 0 15px rgba(212, 175, 55, 0.2);
+}
+
+body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-body);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    color: var(--color-text-primary);
+    margin-top: 0;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg); 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-hover); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary); 
+}

@@ -1,0 +1,71 @@
+.container {
+    padding: var(--spacing-xl);
+    padding-top: 100px;
+    /* Navbar height + spacing */
+    max-width: 1400px;
+    /* Constrain max width for better readability */
+    margin: 0 auto;
+    /* Center the container itself */
+    min-height: 100vh;
+}
+
+.hero {
+    margin-bottom: var(--spacing-xl);
+    text-align: center;
+    width: 100%;
+}
+
+.title {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-primary);
+}
+
+.subtitle {
+    color: var(--color-text-secondary);
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.grid {
+    display: grid;
+    /*
+       minmax(260px, 1fr) ensures responsive card sizing.
+       auto-fill fills the row with as many columns as possible.
+    */
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 32px;
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
+    /* This centers the grid columns if they don't fill the full width perfectly */
+    justify-content: center;
+}
+
+.loading,
+.error,
+.endMessage {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--color-text-secondary);
+    font-size: 1.1rem;
+    width: 100%;
+}
+
+.error {
+    color: var(--color-accent);
+}
+
+.loadTrigger {
+    height: 20px;
+    margin: 20px 0;
+    width: 100%;
+}
+
+/* Response to "Mobile: 1 card per row" specific constraint if needed */
+@media (max-width: 600px) {
+    .grid {
+        grid-template-columns: 1fr;
+        /* Force single column on very small screens */
+    }
+}
