@@ -46,16 +46,22 @@ export const ProductProvider = ({ children }) => {
             const currentPage = reset ? 1 : page;
             let data;
 
-            console.log(`[ProductContext] Loading products. Page: ${currentPage}, Query: ${searchQuery}`);
 
             if (searchQuery) {
-                data = await api.searchProductsByName(searchQuery, currentPage, sortBy);
+                // If query is numeric, it might be a barcode
+                if (/^\d+$/.test(searchQuery)) {
+                    const barcodeData = await api.getProductByBarcode(searchQuery);
+                    data = { products: barcodeData.product ? [barcodeData.product] : [] };
+                } else {
+                    data = await api.searchProductsByName(searchQuery, currentPage, sortBy, selectedCategory);
+                }
+            } else if (selectedCategory) {
+                data = await api.getProductsByCategory(selectedCategory, currentPage, sortBy);
             } else {
-                data = await api.fetchProducts(currentPage, selectedCategory, sortBy);
+                data = await api.fetchAllProducts(currentPage, sortBy);
             }
 
             const newProducts = data.products || [];
-            console.log(`[ProductContext] Fetched ${newProducts.length} products.`);
 
             if (reset) {
                 setProducts(newProducts);
@@ -80,12 +86,27 @@ export const ProductProvider = ({ children }) => {
             setError(null);
 
         } catch (err) {
-            console.error("[ProductContext] Error:", err);
-            // Only set error if we have NO products to show. 
-            // If we have products but loadMore fails, maybe just stop infinite scroll or toast?
-            // For now, simple error setting:
+            console.error("Fetch error:", err);
+            console.error("Error details:", {
+                message: err.message,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data,
+                url: err.config?.url,
+                method: err.config?.method
+            });
+
+            // Set user-friendly error message
             if (reset) {
-                setError("Failed to load products. Please check your connection.");
+                if (err.code === 'ECONNABORTED') {
+                    setError("Request timed out. The API is slow, please try again.");
+                } else if (err.response?.status === 429) {
+                    setError("Too many requests. Please wait a moment and try again.");
+                } else if (err.response?.status >= 500) {
+                    setError("Server error. The API is temporarily unavailable.");
+                } else {
+                    setError("Failed to load products. Please check your connection.");
+                }
             }
         } finally {
             setLoading(false);
@@ -93,13 +114,25 @@ export const ProductProvider = ({ children }) => {
         }
     }, [page, searchQuery, selectedCategory, sortBy]);
 
+    // Initial Load: Load products immediately on mount
+    useEffect(() => {
+        loadProducts(true);
+    }, []); // Only run once on mount
+
     // Handle Search/Filter changes with Debounce
     useEffect(() => {
+        // Skip initial render (when all filters are default/empty and products are empty)
+        if (products.length === 0 && !searchQuery && !selectedCategory && sortBy === 'unique_scans_n') {
+            return; // Let the initial load effect handle this
+        }
+
         // Clear any pending timeouts
         if (searchTimeout.current) clearTimeout(searchTimeout.current);
 
         // Reset state for new search
         setHasMore(true);
+        // Set loading immediately for visual feedback
+        setLoading(true);
 
         searchTimeout.current = setTimeout(() => {
             loadProducts(true);

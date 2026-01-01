@@ -3,66 +3,99 @@ import axios from 'axios';
 
 // baseURL is not set because we are using Vite proxy for /cgi, /category, /api
 const api = axios.create({
-    timeout: 10000,
+    timeout: 45000, // Increased to 45 seconds for very slow OpenFoodFacts API
     headers: {
         'Content-Type': 'application/json'
     }
 });
 
-export const fetchProducts = async (page = 1, category = '', sort = 'unique_scans_n') => {
-    try {
-        let url;
-        if (category) {
-            // Search by category
-            url = `/category/${category}.json?page=${page}`;
-        } else {
-            // Search.pl endpoint via proxy
-            url = `/cgi/search.pl?search_simple=1&action=process&json=1&page=${page}&sort_by=${sort}`;
+// Add response interceptor for better error handling with retry logic
+api.interceptors.response.use(
+    response => response,
+    async error => {
+        const originalRequest = error.config;
+
+        // Initialize retry count if not present
+        if (!originalRequest._retryCount) {
+            originalRequest._retryCount = 0;
         }
 
-        console.log(`[API] Fetching products: ${url}`);
-        const response = await api.get(url);
-        console.log("[API] Response:", response.data);
-        return response.data;
-    } catch (error) {
-        console.error("[API] Error fetching products:", error);
-        throw error;
-    }
-};
+        // Retry logic for network errors or timeouts (max 2 retries)
+        if (originalRequest._retryCount < 2 &&
+            (error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK' || !error.response)) {
+            originalRequest._retryCount++;
+            const retryDelay = Math.min(1000 * Math.pow(2, originalRequest._retryCount - 1), 3000);
 
-export const searchProductsByName = async (name, page = 1, sort = 'unique_scans_n') => {
-    try {
-        const url = `/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page=${page}&sort_by=${sort}`;
-        console.log(`[API] Searching products: ${url}`);
-        const response = await api.get(url);
-        if (!response.data) {
-            throw new Error("No data received from API");
+            console.log(`Retry attempt ${originalRequest._retryCount}/2 for ${originalRequest.url} after ${retryDelay}ms`);
+
+            // Exponential backoff: wait longer for each retry
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+
+            // Increase timeout for retry attempts
+            originalRequest.timeout = 45000;
+            return api(originalRequest);
         }
-        console.log("[API] Search Response:", response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`[API] Error searching products "${name}":`, error);
-        throw error;
+
+        console.log('Request failed after retries:', originalRequest.url);
+        return Promise.reject(error);
     }
+);
+
+/**
+ * Get products by category
+ */
+export const getProductsByCategory = async (category, page = 1, sort = 'unique_scans_n') => {
+    // Only fetch by category if category is provided
+    if (!category) {
+        return fetchAllProducts(page, sort);
+    }
+
+    // Use search.pl with category tag
+    const url = `/cgi/search.pl?search_terms=&tagtype_0=categories&tag_contains_0=contains&tag_0=${encodeURIComponent(category)}&sort_by=${sort}&page_size=24&json=true&page=${page}&action=process`;
+    const response = await api.get(url);
+    return response.data;
 };
 
+/**
+ * Search products by name
+ * Endpoint: https://world.openfoodfacts.org/cgi/search.pl?search_terms={name}&json=true
+ */
+export const searchProductsByName = async (name, page = 1, sort = 'unique_scans_n', category = '') => {
+    let url = `/cgi/search.pl?search_terms=${encodeURIComponent(name)}&json=true&page=${page}&sort_by=${sort}&page_size=24&action=process`;
+
+    if (category) {
+        url += `&tagtype_0=categories&tag_contains_0=contains&tag_0=${category}`;
+    }
+
+    const response = await api.get(url);
+    return response.data;
+};
+
+/**
+ * Get product details by barcode
+ * Endpoint: https://world.openfoodfacts.org/api/v0/product/{barcode}.json
+ */
 export const getProductByBarcode = async (barcode) => {
-    try {
-        const url = `/api/v0/product/${barcode}.json`;
-        console.log(`[API] Fetching barcode: ${url}`);
-        const response = await api.get(url);
-        console.log("[API] Barcode Response:", response.data);
-        return response.data;
-    } catch (error) {
-        console.error(`[API] Error fetching barcode "${barcode}":`, error);
-        throw error;
-    }
+    const url = `/api/v0/product/${barcode}.json`;
+    const response = await api.get(url);
+    return response.data;
 };
 
+/**
+ * Generic search/fetch for initial load or sorting when no specific category/search is selected
+ */
+export const fetchAllProducts = async (page = 1, sort = 'unique_scans_n') => {
+    const url = `/cgi/search.pl?action=process&sort_by=${sort}&page_size=24&json=true&page=${page}`;
+    const response = await api.get(url);
+    return response.data;
+};
+
+/**
+ * Get categories for filters
+ */
 export const getCategories = async () => {
     try {
         const url = '/categories.json';
-        console.log(`[API] Fetching categories: ${url}`);
         const response = await api.get(url);
 
         if (response.data && response.data.tags) {
@@ -76,8 +109,7 @@ export const getCategories = async () => {
                 .slice(0, 50);
         }
         return [];
-    } catch (error) {
-        console.error("[API] Error fetching categories:", error);
+    } catch {
         return [];
     }
-}
+};

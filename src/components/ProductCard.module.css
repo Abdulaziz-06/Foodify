@@ -1,131 +1,192 @@
 .card {
-    background: var(--color-surface);
-    border-radius: 16px;
+    background: var(--surface-glass);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-radius: 30px;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: var(--transition-smooth);
+    border: 1.5px solid var(--surface-border);
     display: flex;
-    /* Flexbox for internal layout */
     flex-direction: column;
-    /* Stack children vertical */
     height: 100%;
-    /* Force card to fill the grid cell height fully */
-    cursor: pointer;
-    position: relative;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.05);
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.15);
+    border-color: var(--text-primary);
+    transform: translateY(-8px);
 }
 
-.imageContainer {
+.imageSection {
     width: 100%;
-    /* Fixed height for image section ensures uniformity */
-    height: 220px;
-    background: #fff;
+    height: 280px;
+    position: relative;
+    overflow: hidden;
+    background: #fdfdfd;
+    /* Clean background for light theme */
+}
+
+[data-theme="dark"] .imageSection {
+    background: #0d0d0d;
+}
+
+.mainImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* ENSURES WHOLE IMAGE IS VISIBLE WITHOUT CROPPING */
+    padding: 15px;
+    /* SPACE AROUND PRODUCT FOR BETTER VISIBILITY */
+    transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: block;
+    box-sizing: border-box;
+}
+
+.card:hover .mainImage {
+    transform: scale(1.08);
+    /* Subtle zoom for premium feel */
+}
+
+.gradeBadge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 900;
+    font-size: 20px;
+    color: #fff;
+    text-transform: uppercase;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+    pointer-events: none;
 }
 
-.image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    /* Maintains aspect ratio without cropping */
-    transition: transform 0.5s ease;
+.gradeBadge[data-grade="a"] {
+    background: var(--grade-a);
 }
 
-.card:hover .image {
-    transform: scale(1.05);
+.gradeBadge[data-grade="b"] {
+    background: var(--grade-b);
+}
+
+.gradeBadge[data-grade="c"] {
+    background: var(--grade-c);
+}
+
+.gradeBadge[data-grade="d"] {
+    background: var(--grade-d);
+}
+
+.gradeBadge[data-grade="e"] {
+    background: var(--grade-e);
+}
+
+.noImage {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
 }
 
 .info {
-    padding: 20px;
+    padding: 28px 32px 36px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    /* Pushes footer to the bottom if content is short */
 }
 
-.brand {
+.categoryInfo {
     font-size: 11px;
-    color: var(--color-primary);
+    font-weight: 800;
+    color: var(--text-secondary);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 700;
-    margin-bottom: 8px;
+    letter-spacing: 2.5px;
+    margin-bottom: 12px;
+    opacity: 0.7;
 }
 
 .name {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin-bottom: 16px;
-    /* Limit to 2 lines for consistency */
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin-bottom: 28px;
+    line-height: 1.25;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    line-height: 1.4;
-    height: 50px;
-    /* Fixed height reservation for 2 lines */
+    height: 55px;
+    /* Consistent text height */
+    letter-spacing: -0.8px;
 }
 
 .footer {
     margin-top: auto;
-    /* Uses flex-grow of .info to stay at bottom */
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    gap: 12px;
 }
 
-.grade {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #fff;
+.brandTag {
     font-size: 14px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: -0.2px;
 }
 
-.grade[data-grade="a"] {
-    background: var(--grade-a);
+.dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--surface-border);
 }
 
-.grade[data-grade="b"] {
-    background: var(--grade-b);
+.exploreBtn {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--text-primary);
+    position: relative;
 }
 
-.grade[data-grade="c"] {
-    background: var(--grade-c);
+.exploreBtn::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 15px;
+    height: 2px;
+    background: var(--text-primary);
+    transition: var(--transition-smooth);
 }
 
-.grade[data-grade="d"] {
-    background: var(--grade-d);
+.card:hover .exploreBtn::after {
+    width: 100%;
 }
 
-.grade[data-grade="e"] {
-    background: var(--grade-e);
-}
+@media (max-width: 768px) {
+    .imageSection {
+        height: 240px;
+    }
 
-.grade[data-grade="unknown"] {
-    background: var(--color-text-secondary);
-}
+    .info {
+        padding: 24px;
+    }
 
-.detailsBtn {
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    font-weight: 500;
+    .name {
+        font-size: 19px;
+    }
 }

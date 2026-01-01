@@ -1,77 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  /* Colors - Premium Dark Theme */
-  --color-bg: #0f1115;
-  --color-surface: #181b21;
-  --color-surface-hover: #232730;
-  --color-text-primary: #f0f0f0;
-  --color-text-secondary: #a0a0a0;
-  
-  --color-primary: #d4af37; /* Gold */
-  --color-primary-hover: #f0c440;
-  --color-accent: #ff6b6b; /* Soft Red for scores/badges */
-  
-  --color-border: #2a2e37;
-  
-  /* Grades */
-  --grade-a: #03a65a;
-  --grade-b: #85bb2f;
-  --grade-c: #ffc900;
-  --grade-d: #ee8100;
-  --grade-e: #e63e11;
+  /* Default: Light Theme (Professional, Premium style) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f9fafb;
+  --surface-glass: rgba(255, 255, 255, 0.82);
+  --surface-border: rgba(0, 0, 0, 0.08);
+  --text-primary: #0a0a0a;
+  --text-secondary: #4b5563;
+  --accent-primary: #000000;
+  /* Black branding as requested */
+  --accent-secondary: #111827;
+  --ripple-color: rgba(0, 0, 0, 0.12);
+  /* More visible ripple */
 
-  /* Typography */
-  --font-family-heading: 'Playfair Display', serif;
-  --font-family-body: 'Inter', sans-serif;
-  
-  /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 40px;
-  
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  
-  /* Shadows */
-  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
-  --shadow-md: 0 4px 12px rgba(0,0,0,0.2);
-  --shadow-lg: 0 10px 25px rgba(0,0,0,0.3);
-  --shadow-glow: 0 0 15px rgba(212, 175, 55, 0.2);
+  --grade-a: #059669;
+  --grade-b: #65a30d;
+  --grade-c: #d97706;
+  --grade-d: #ea580c;
+  --grade-e: #dc2626;
+
+  --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-blur: blur(24px);
+  --star-color: rgba(0, 0, 0, 0.2);
 }
 
-body {
-    background-color: var(--color-bg);
-    color: var(--color-text-primary);
-    font-family: var(--font-family-body);
-    margin: 0;
-    -webkit-font-smoothing: antialiased;
+[data-theme='dark'] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #121212;
+  --surface-glass: rgba(18, 18, 18, 0.8);
+  --surface-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #f9fafb;
+  --text-secondary: #9ca3af;
+  --accent-primary: #ffffff;
+  --accent-secondary: #e5e7eb;
+  --ripple-color: rgba(255, 255, 255, 0.18);
+  --star-color: rgba(255, 255, 255, 0.4);
 }
 
-h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-family-heading);
-    color: var(--color-text-primary);
-    margin-top: 0;
+[data-theme='christmas'] {
+  --bg-primary: #064e3b;
+  /* Deep Alpine Green */
+  --bg-secondary: #065f46;
+  --surface-glass: rgba(6, 78, 59, 0.8);
+  --surface-border: rgba(255, 255, 255, 0.15);
+  --text-primary: #ffffff;
+  --text-secondary: #a7f3d0;
+  --accent-primary: #ef4444;
+  /* Festive Red */
+  --accent-secondary: #fca5a5;
+  --ripple-color: rgba(255, 255, 255, 0.05);
+  --star-color: rgba(255, 255, 255, 0.6);
 }
 
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  /* Setting background to transparent so InteractiveBackground (fixed z-index -1) shows through */
+  background-color: transparent;
+  color: var(--text-primary);
+  min-height: 100vh;
+  margin: 0;
+  overflow-x: hidden;
+  transition: color 0.5s ease;
 }
-::-webkit-scrollbar-track {
-  background: var(--color-bg); 
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
-::-webkit-scrollbar-thumb {
-  background: var(--color-surface-hover); 
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary); 
+
+button {
+  font-family: inherit;
+  cursor: pointer;
 }
