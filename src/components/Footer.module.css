@@ -1,0 +1,134 @@
+.footer {
+    width: 100%;
+    background: var(--surface-glass);
+    backdrop-filter: var(--glass-blur);
+    border-top: 1px solid var(--surface-border);
+    padding: 60px 0 30px;
+    margin-top: auto;
+    color: var(--text-primary);
+
+}
+
+.content {
+    width: 100%;
+    max-width: 100%;
+    /* Full screen width */
+    margin: 0;
+    padding: 0 30px;
+    /* 30px from the left side */
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.brandColumn {
+    flex: 1;
+    min-width: 250px;
+}
+
+
+.logo {
+    font-size: 34px;
+    font-weight: 900;
+    color: var(--text-primary);
+    text-transform: none;
+    letter-spacing: -1.8px;
+    margin-bottom: 16px;
+    display: block;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.tagline {
+    color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.6;
+    margin-bottom: 24px;
+    max-width: 300px;
+    opacity: 0.9;
+}
+
+.linksColumn {
+    display: flex;
+    gap: 80px;
+    flex-wrap: wrap;
+    padding-right: 30px;
+
+}
+
+.linkGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.groupTitle {
+    font-size: 14px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    opacity: 1;
+}
+
+.link {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    opacity: 0.8;
+    font-weight: 500;
+}
+
+.link:hover {
+    opacity: 1;
+    color: var(--accent-primary);
+    transform: translateX(2px);
+}
+
+.bottomBar {
+    width: 100%;
+    max-width: 100%;
+    margin: 60px 0 0;
+    padding: 24px 30px 0;
+    border-top: 1px solid var(--surface-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-primary);
+    opacity: 0.8;
+    font-size: 13px;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-weight: 500;
+}
+
+.legalLinks {
+    display: flex;
+    gap: 24px;
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+        gap: 40px;
+        padding: 0 20px;
+
+    }
+
+    .linksColumn {
+        width: 100%;
+        justify-content: space-between;
+        padding-right: 0;
+        gap: 40px;
+    }
+
+    .bottomBar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 24px 20px 0;
+    }
+}
