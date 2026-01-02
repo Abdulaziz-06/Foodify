@@ -50,8 +50,8 @@ export const getProductsByCategory = async (category, page = 1, sort = 'unique_s
         return fetchAllProducts(page, sort);
     }
 
-    // Use search.pl with category tag
-    const url = `/cgi/search.pl?search_terms=&tagtype_0=categories&tag_contains_0=contains&tag_0=${encodeURIComponent(category)}&sort_by=${sort}&page_size=24&json=true&page=${page}&action=process`;
+    // Use search.pl with category tag - improved URL structure for better reliability
+    const url = `/cgi/search.pl?action=process&tagtype_0=categories&tag_contains_0=contains&tag_0=${encodeURIComponent(category)}&sort_by=${sort}&page_size=24&json=true&page=${page}`;
     const response = await api.get(url);
     return response.data;
 };
@@ -61,10 +61,10 @@ export const getProductsByCategory = async (category, page = 1, sort = 'unique_s
  * Endpoint: https://world.openfoodfacts.org/cgi/search.pl?search_terms={name}&json=true
  */
 export const searchProductsByName = async (name, page = 1, sort = 'unique_scans_n', category = '') => {
-    let url = `/cgi/search.pl?search_terms=${encodeURIComponent(name)}&json=true&page=${page}&sort_by=${sort}&page_size=24&action=process`;
+    let url = `/cgi/search.pl?action=process&search_terms=${encodeURIComponent(name)}&json=true&page=${page}&sort_by=${sort}&page_size=24`;
 
     if (category) {
-        url += `&tagtype_0=categories&tag_contains_0=contains&tag_0=${category}`;
+        url += `&tagtype_0=categories&tag_contains_0=contains&tag_0=${encodeURIComponent(category)}`;
     }
 
     const response = await api.get(url);

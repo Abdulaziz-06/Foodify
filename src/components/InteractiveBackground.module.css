@@ -39,15 +39,16 @@
 
 .circle {
     position: absolute;
-    border: 1.5px solid rgba(107, 114, 128, 0.25);
-    /* More visible gray circles for light theme */
+    border: 2px solid rgba(60, 60, 60, 0.4);
+    /* Darker gray circles for light theme - more visible */
     border-radius: 50%;
     pointer-events: none;
-    transition: var(--transition-smooth);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 [data-theme="dark"] .circle {
-    border-color: var(--ripple-color);
+    border-color: rgba(255, 255, 255, 0.35);
+    /* White ripples in dark mode, clearly visible */
 }
 
 .vignette {

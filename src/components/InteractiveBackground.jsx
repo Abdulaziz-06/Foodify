@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import styles from './InteractiveBackground.module.css';
 
@@ -21,26 +21,54 @@ const Snowflake = ({ id }) => {
 const InteractiveBackground = () => {
     const { theme } = useTheme();
     const snowflakes = useMemo(() => Array.from({ length: 30 }, (_, i) => i), []);
-
-    // Premium static concentric circles matching screenshot exactly
     const circles = useMemo(() => Array.from({ length: 14 }, (_, i) => i), []);
+
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const handleMouseMove = (e) => {
+            setMousePos({ x: e.clientX, y: e.clientY });
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    // Calculate distance from mouse to center for hover effect
+    const getCircleStyle = (index, baseSize) => {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const distance = Math.sqrt(
+            Math.pow(mousePos.x - centerX, 2) +
+            Math.pow(mousePos.y - centerY, 2)
+        );
+
+        const radius = baseSize / 2;
+        const distanceFromRipple = Math.abs(distance - radius);
+        const isNear = distanceFromRipple < 100;
+
+        return {
+            width: `${baseSize}px`,
+            height: `${baseSize}px`,
+            opacity: isNear ?
+                Math.max(0.06, 0.18 - (index * 0.009)) :
+                Math.max(0.025, 0.14 - (index * 0.009)),
+            transform: isNear ? 'scale(1.05)' : 'scale(1)',
+        };
+    };
 
     return (
         <div className={styles.container} data-theme={theme}>
             {/* Background Dot Grid */}
             <div className={styles.dotGrid} />
 
-            {/* Static Centered Ripples - Exact Spacing & Stroke */}
+            {/* Static Centered Ripples - Now Responsive to Mouse */}
             <div className={styles.rippleContainer}>
                 {circles.map(i => (
                     <div
                         key={i}
                         className={styles.circle}
-                        style={{
-                            width: `${280 + i * 160}px`,
-                            height: `${280 + i * 160}px`,
-                            opacity: Math.max(0.015, 0.14 - (i * 0.009)),
-                        }}
+                        style={getCircleStyle(i, 280 + i * 160)}
                     />
                 ))}
             </div>

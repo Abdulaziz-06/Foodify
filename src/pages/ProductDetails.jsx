@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getProductByBarcode } from '../services/api';
 import Navbar from '../components/Navbar';
 import { motion } from 'framer-motion';
-import { ArrowLeft, CheckCircle, AlertTriangle, Info, Zap } from 'lucide-react';
+import { ArrowLeft, CheckCircle, AlertTriangle, Info, Zap, Package, Beef, Droplets } from 'lucide-react';
 import styles from './ProductDetails.module.css';
 
 const ProductDetails = () => {
@@ -48,7 +48,7 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className={styles.loaderContainer}>
+            <div className={styles.loadingContainer}>
                 <div className={styles.loader}></div>
                 <p>Retrieving nutrition data...</p>
             </div>
@@ -73,34 +73,38 @@ const ProductDetails = () => {
 
     const name = getBestName(product);
     const grade = product.nutrition_grades?.toLowerCase() || 'unknown';
+    const nutriments = product.nutriments || {};
+
+    const nutritionFacts = [
+        { label: 'Energy', value: nutriments.energy_100g, unit: 'kcal', icon: <Zap size={16} /> },
+        { label: 'Fat', value: nutriments.fat_100g, unit: 'g', icon: <Droplets size={16} /> },
+        { label: 'Proteins', value: nutriments.proteins_100g, unit: 'g', icon: <Beef size={16} /> },
+        { label: 'Carbohydrates', value: nutriments.carbohydrates_100g, unit: 'g', icon: <Package size={16} /> }
+    ];
 
     return (
         <div className={styles.pageWrapper}>
             <Navbar />
 
             <main className={styles.container}>
-                <motion.button
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
+                <button
                     onClick={() => navigate(-1)}
-                    className={styles.floatBackBtn}
+                    className={styles.backLink}
                 >
-                    <ArrowLeft size={24} />
-                </motion.button>
+                    <ArrowLeft size={20} /> Back to Products
+                </button>
 
-                <div className={styles.contentGrid}>
+                <div className={styles.grid}>
                     <motion.section
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         className={styles.imageSection}
                     >
-                        <div className={styles.mainImageContainer}>
-                            <img
-                                src={product.image_front_url || product.image_url}
-                                alt={name}
-                                className={styles.mainImage}
-                            />
-                        </div>
+                        <img
+                            src={product.image_front_url || product.image_url}
+                            alt={name}
+                            className={styles.mainImage}
+                        />
                     </motion.section>
 
                     <motion.section
@@ -109,58 +113,75 @@ const ProductDetails = () => {
                         transition={{ delay: 0.1 }}
                         className={styles.detailsSection}
                     >
-                        <div className={styles.header}>
-                            <span className={styles.categoryBadge}>{product.categories?.split(',')[0].replace(/^[a-z]{2}:/, '')}</span>
-                            <h1 className={styles.productTitle}>{name}</h1>
-                            <p className={styles.brandName}>{product.brands ? `by ${product.brands.split(',')[0]}` : 'Essential Choice'}</p>
-                        </div>
+                        <span className={styles.brand}>
+                            {product.brands ? product.brands.split(',')[0] : 'Essential Choice'}
+                        </span>
+                        <h1 className={styles.title}>{name}</h1>
 
-                        <div className={styles.statsGrid}>
-                            <div className={styles.statCard} data-grade={grade}>
-                                <div className={styles.gradeCircle}>
-                                    {grade}
-                                </div>
+                        <div className={styles.statsRow}>
+                            <div className={styles.gradeCard}>
                                 <span className={styles.statLabel}>Nutri-Score</span>
-                            </div>
-                            <div className={styles.statCard}>
-                                <Zap size={24} className={styles.statIcon} />
-                                <span className={styles.statValue}>
-                                    {product.nutriments?.energy_100g || 0}
-                                    <small>kcal/100g</small>
-                                </span>
-                                <span className={styles.statLabel}>Energy Value</span>
+                                <div className={styles.gradeWrapper}>
+                                    <div className={styles.gradeCircle} data-grade={grade}>
+                                        {grade}
+                                    </div>
+                                    <span className={styles.gradeText}>
+                                        Grade {grade.toUpperCase()}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        <div className={styles.infoSection}>
-                            <div className={styles.sectionHeader}>
+                        <div className={styles.badges}>
+                            {product.categories?.split(',').slice(0, 5).map((cat, i) => (
+                                <span key={i} className={styles.badge}>
+                                    {cat.replace(/^[a-z]{2}:/, '').replace(/-/g, ' ')}
+                                </span>
+                            ))}
+                        </div>
+
+                        <div className={styles.detailsCard}>
+                            <div className={styles.cardHeader}>
                                 <Info size={20} />
-                                <h3>Product Intel</h3>
+                                <h3>Ingredients</h3>
                             </div>
-                            <div className={styles.infoGrid}>
-                                <div className={styles.infoItem}>
-                                    <label>Quantity</label>
-                                    <span>{product.quantity || 'N/A'}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <label>Ingredients Analyzed</label>
-                                    <span>{product.ingredients_text ? 'Available' : 'Limited Data'}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <label>Packaging</label>
-                                    <span>{product.packaging || 'Standard Packaging'}</span>
-                                </div>
-                                <div className={styles.infoItem}>
-                                    <label>Serving Size</label>
-                                    <span>{product.serving_size || 'N/A'}</span>
-                                </div>
+                            <p className={styles.ingredients}>
+                                {product.ingredients_text || "No ingredient information available for this product."}
+                            </p>
+                        </div>
+
+                        <div className={styles.detailsCard}>
+                            <div className={styles.cardHeader}>
+                                <Zap size={20} />
+                                <h3>Nutrition Facts (per 100g)</h3>
                             </div>
+                            <table className={styles.nutritionTable}>
+                                <thead>
+                                    <tr>
+                                        <th>Nutrient</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {nutritionFacts.map((fact, index) => (
+                                        <tr key={index}>
+                                            <td>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    {fact.icon}
+                                                    {fact.label}
+                                                </div>
+                                            </td>
+                                            <td>{fact.value !== undefined ? `${fact.value} ${fact.unit}` : 'N/A'}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
 
                         <div className={styles.footer}>
-                            <div className={styles.verification}>
-                                <CheckCircle size={18} />
-                                Authenticated by Open Food Facts
+                            <div className={styles.verification} style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                                <CheckCircle size={18} color="var(--grade-a)" />
+                                Data sourced from Open Food Facts
                             </div>
                         </div>
                     </motion.section>
