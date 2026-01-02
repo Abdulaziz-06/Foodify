@@ -8,21 +8,28 @@
     padding: 100px 24px 60px;
 }
 
+/* Update Back Link to be more button-like */
 .backLink {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--text-secondary);
+    color: var(--text-primary);
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-border);
+    padding: 10px 20px;
+    border-radius: 9999px;
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 32px;
-    transition: var(--transition-smooth);
+    transition: all 0.2s ease;
     width: fit-content;
+    cursor: pointer;
 }
 
 .backLink:hover {
-    color: var(--accent-primary);
+    background: var(--surface-hover);
     transform: translateX(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .grid {
@@ -274,5 +281,90 @@
         position: relative;
         top: 0;
         height: 350px;
+    }
+}
+
+/* Warning Banner */
+.warningBanner {
+    background: rgba(255, 170, 0, 0.08);
+    border: 1px solid rgba(255, 170, 0, 0.2);
+    color: #d97706;
+    /* Amber-600 */
+    padding: 16px 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 32px;
+    font-weight: 500;
+    font-size: 15px;
+}
+
+[data-theme="dark"] .warningBanner {
+    background: rgba(255, 170, 0, 0.15);
+    color: #fbbf24;
+    /* Amber-400 */
+}
+
+/* Empty States */
+.emptyText {
+    font-style: italic;
+    opacity: 0.7;
+    display: block;
+}
+
+.emptyStateBox {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-secondary);
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+    font-style: italic;
+}
+
+/* Footer & verification */
+.footer {
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--surface-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.verification {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.externalLink {
+    color: var(--accent-primary);
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.externalLink:hover {
+    background: var(--accent-primary);
+    color: white;
+}
+
+@media (max-width: 600px) {
+    .footer {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }

@@ -1,3 +1,5 @@
+/* Professional Background Component Styles */
+
 .container {
     position: fixed;
     top: 0;
@@ -8,6 +10,39 @@
     overflow: hidden;
     background-color: var(--bg-primary);
     transition: background-color 0.8s ease;
+}
+
+/* 
+ * Icon Pattern Layer
+ * Adds a subtle, blurred festive pattern to the edges of the screen.
+ * Uses a Data URI SVG for performance and consistent scaling.
+ */
+/* 
+ * Icon Pattern Layer
+ * Adds a blurred food-themed pattern (Burgers, Pizza, Fruits).
+ * Uses a Data URI SVG with visible icons.
+ */
+.iconPattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Darker grey fill for visibility */
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%234B5563' fill-opacity='0.5'%3E%3C!-- Burger --%3E%3Cpath d='M20 25c0-5.5 4.5-10 10-10s10 4.5 10 10h-20zM20 35h20v5H20v-5zm0-8h20v3H20v-3z'/%3E%3C!-- Pizza --%3E%3Cpath d='M70 20l-15 30h30L70 20zm-2 10a2 2 0 1 1 0 4 2 2 0 0 1 0-4zm4 8a2 2 0 1 1 0 4 2 2 0 0 1 0-4z'/%3E%3C!-- Apple --%3E%3Cpath d='M30 70c-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10-4.5-10-10-10zm0-5c0 0 3-5 5-5s2 5 2 5'/%3E%3C!-- Drink --%3E%3Cpath d='M75 65h10v20c0 2.5-2 5-5 5s-5-2.5-5-5V65zm2-8l3 6'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    filter: blur(1.5px);
+    /* Reduced blur for clarity */
+    /* Mask: Clearer on edges, transparent in center */
+    mask-image: radial-gradient(circle at center, transparent 40%, black 90%);
+    -webkit-mask-image: radial-gradient(circle at center, transparent 40%, black 90%);
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 0;
+}
+
+[data-theme="dark"] .iconPattern {
+    opacity: 0.3;
 }
 
 .dotGrid {
@@ -26,7 +61,6 @@
 .rippleContainer {
     position: absolute;
     top: 50vh;
-    /* Perfectly centered on viewport */
     left: 50vw;
     transform: translate(-50%, -50%);
     pointer-events: none;
@@ -34,13 +68,11 @@
     align-items: center;
     justify-content: center;
     z-index: 2;
-    /* ABOVE dotGrid, BELOW content */
 }
 
 .circle {
     position: absolute;
     border: 2px solid rgba(60, 60, 60, 0.4);
-    /* Darker gray circles for light theme - more visible */
     border-radius: 50%;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -48,7 +80,6 @@
 
 [data-theme="dark"] .circle {
     border-color: rgba(255, 255, 255, 0.35);
-    /* White ripples in dark mode, clearly visible */
 }
 
 .vignette {
@@ -79,18 +110,19 @@
 .snowflake {
     position: absolute;
     top: -20px;
-    color: #6b7280;
-    /* Gray color for better visibility on light theme */
+    color: #9CA3AF;
+    /* Visible silver-grey for light mode */
     user-select: none;
     animation: fall linear infinite;
-    opacity: 0.4;
-    /* Increased opacity for better visibility */
+    opacity: 0.8;
+    /* Higher opacity for visibility */
     font-family: serif;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.1));
 }
 
 [data-theme="dark"] .snowflake {
-    color: #9ca3af;
-    opacity: 0.3;
+    color: #ffffff;
+    opacity: 0.4;
 }
 
 @keyframes fall {

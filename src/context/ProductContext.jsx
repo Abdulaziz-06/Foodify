@@ -1,132 +1,146 @@
+import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { getProducts } from '../services/api';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import * as api from '../services/api';
-
+/**
+ * Product Context
+ * Provides global state management for food products across the whole application.
+ * Using context ensures that search results and filter settings are preserved 
+ * as the user navigates between pages.
+ */
 const ProductContext = createContext();
 
 export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
+    // --- State Storage ---
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [categories, setCategories] = useState([]);
 
-    // Filters & Pagination
+    // --- Search & Filter Settings ---
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [sortBy, setSortBy] = useState('unique_scans_n'); // default popular
+    const [sortBy, setSortBy] = useState('popularity');
 
-    // Debounce refs
-    const searchTimeout = useRef(null);
-    const loadingRef = useRef(false);
+    // --- Internal Refs for Performance ---
+    const debounceTimeout = useRef(null);
+    const abortController = useRef(null);
 
-    // Fetch Categories on mount
+    /**
+     * Data Reset
+     * Clears the product list and resets pagination. 
+     * Usually called when the user changes a search term or category.
+     */
+    const resetList = () => {
+        setProducts([]);
+        setPage(1);
+        setHasMore(true);
+    };
+
+    /**
+     * Automatic Reset
+     * Whenever a filter or search query changes, we start back from page 1.
+     */
     useEffect(() => {
-        const loadCategories = async () => {
-            const cats = await api.getCategories();
-            setCategories(cats);
-        };
-        loadCategories();
-    }, []);
-
-    // Main Fetch Logic
-    const loadProducts = useCallback(async (reset = false) => {
-        if (loadingRef.current && !reset) return; // Allow reset to bypass
-        loadingRef.current = true;
-        setLoading(true);
-
-        if (reset) {
-            setError(null);
-            setProducts([]); // Clear immediately for visual feedback
-        }
-
-        try {
-            const currentPage = reset ? 1 : page;
-            let data;
-
-            if (searchQuery) {
-                if (/^\d+$/.test(searchQuery)) {
-                    const barcodeData = await api.getProductByBarcode(searchQuery);
-                    data = { products: barcodeData.product ? [barcodeData.product] : [] };
-                } else {
-                    data = await api.searchProductsByName(searchQuery, currentPage, sortBy, selectedCategory);
-                }
-            } else if (selectedCategory) {
-                data = await api.getProductsByCategory(selectedCategory, currentPage, sortBy);
-            } else {
-                data = await api.fetchAllProducts(currentPage, sortBy);
-            }
-
-            const newProducts = data.products || [];
-
-            if (reset) {
-                setProducts(newProducts);
-                setPage(2);
-            } else {
-                setProducts(prev => {
-                    const existingIds = new Set(prev.map(p => p._id));
-                    const uniqueNew = newProducts.filter(p => !existingIds.has(p._id));
-                    return [...prev, ...uniqueNew];
-                });
-                setPage(prev => prev + 1);
-            }
-
-            setHasMore(newProducts.length >= 20);
-            setError(null);
-
-        } catch (err) {
-            console.error("Fetch error:", err);
-            if (reset) {
-                setError("Failed to load products. The OpenFoodFacts API might be busy. Please try again.");
-            }
-        } finally {
-            setLoading(false);
-            loadingRef.current = false;
-        }
-    }, [page, searchQuery, selectedCategory, sortBy]);
-
-    // Initial Load
-    useEffect(() => {
-        loadProducts(true);
-    }, []); 
-
-    // Handle Search/Filter changes with Debounce
-    useEffect(() => {
-        // Skip initial call as it's handled by mount useEffect
-        const isInitial = !searchQuery && !selectedCategory && sortBy === 'unique_scans_n' && page === 1;
-        
-        if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
-        searchTimeout.current = setTimeout(() => {
-            loadProducts(true);
-        }, 600); // Slightly faster debounce
-
-        return () => {
-            if (searchTimeout.current) clearTimeout(searchTimeout.current);
-        };
+        resetList();
     }, [searchQuery, selectedCategory, sortBy]);
 
+    /**
+     * Core Data Fetcher
+     * Handles the complexity of fetching items from the Open Food Facts API.
+     * 
+     * @param {boolean} isNewSearch - If true, replaces the list rather than appending (used for resets).
+     */
+    const loadProducts = useCallback(async (isNewSearch = false) => {
+        if (loading) return;
+
+        // If a request is already in progress, we cancel it to avoid "race conditions"
+        // where old results might arrive after new ones.
+        if (abortController.current) {
+            abortController.current.abort();
+        }
+        abortController.current = new AbortController();
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const data = await getProducts(
+                page,
+                24,
+                searchQuery,
+                selectedCategory,
+                sortBy,
+                { signal: abortController.current.signal }
+            );
+
+            if (data.products && data.products.length > 0) {
+                // If it's a new search, we clear old items. Otherwise, we add to them (for infinite scroll).
+                setProducts(prev => isNewSearch ? data.products : [...prev, ...data.products]);
+
+                // If we got fewer items than requested, it means we've reached the end of the database.
+                if (data.products.length < 24) setHasMore(false);
+            } else {
+                if (isNewSearch) setProducts([]);
+                setHasMore(false);
+            }
+        } catch (err) {
+            // We ignore AbortErrors because they are triggered intentionally by our cancel logic.
+            if (err.name !== 'AbortError') {
+                console.error("Problem loading products:", err);
+                setError('We couldn\'t load the products right now. Please check your connection.');
+            }
+        } finally {
+            // Only update loading state if the request wasn't cancelled mid-way.
+            if (!abortController.current?.signal.aborted) {
+                setLoading(false);
+            }
+        }
+    }, [page, searchQuery, selectedCategory, sortBy, loading]);
+
+    /**
+     * Smart Fetch Trigger
+     * Listens for changes to filters or page numbers.
+     * Uses a 500ms "debounce" for search queries so we don't spam the API while the user is typing.
+     */
+    useEffect(() => {
+        const isSearch = searchQuery.length > 0;
+        const delay = isSearch ? 500 : 0; // Typing gets a delay, filters are immediate.
+
+        if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+
+        debounceTimeout.current = setTimeout(() => {
+            loadProducts(page === 1);
+        }, delay);
+
+        return () => clearTimeout(debounceTimeout.current);
+    }, [page, searchQuery, selectedCategory, sortBy]);
+
+    /**
+     * Pagination Helper
+     * Moves to the next page of results, which triggers the fetch cycle.
+     */
+    const loadMore = () => {
+        if (!loading && hasMore) {
+            setPage(prev => prev + 1);
+        }
+    };
+
+    // --- Exposed Context Values ---
     const value = {
         products,
         loading,
         error,
-        categories,
         hasMore,
+        loadMore,
         searchQuery,
         setSearchQuery,
         selectedCategory,
         setSelectedCategory,
         sortBy,
-        setSortBy,
-        loadMore: () => {
-            // Only load more if we have more and aren't loading
-            if (hasMore && !loading && !loadingRef.current) {
-                loadProducts(false);
-            }
-        }
+        setSortBy
     };
 
     return (

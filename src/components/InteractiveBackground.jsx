@@ -2,7 +2,12 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import styles from './InteractiveBackground.module.css';
 
-const Snowflake = ({ id }) => {
+/**
+ * Animated Snowflake Component
+ * Each snowflake is unique, with randomized speed, size, and starting position.
+ * Memoized to prevent unnecessary re-renders during snow generation.
+ */
+const Snowflake = () => {
     const style = useMemo(() => ({
         left: `${Math.random() * 100}%`,
         animationDuration: `${Math.random() * 8 + 7}s`,
@@ -11,20 +16,33 @@ const Snowflake = ({ id }) => {
         opacity: Math.random() * 0.3 + 0.1,
     }), []);
 
-    return (
-        <div className={styles.snowflake} style={style}>
-            *
-        </div>
-    );
+    return <div className={styles.snowflake} style={style}>*</div>;
 };
 
+/**
+ * Interactive Background Component
+ * Provides a rich, dynamic atmosphere for the application.
+ * Features:
+ * - Animated Snowfall: Gentle falling particles for a premium aesthetic.
+ * - Reactive Ripples: Circles that react to mouse movements.
+ * - Dot Grid: A subtle architectural pattern for structure.
+ * - Dynamic Vignette: Enhances focus on the content based on the theme.
+ */
 const InteractiveBackground = () => {
     const { theme } = useTheme();
-    const snowflakes = useMemo(() => Array.from({ length: 30 }, (_, i) => i), []);
+
+    // We generate 120 snowflakes for a dense, high-quality "snowstorm" effect.
+    const snowflakes = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
+
+    // Pre-calculated layers for the reactive ripple rings.
     const circles = useMemo(() => Array.from({ length: 14 }, (_, i) => i), []);
 
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
+    /**
+     * Mouse Interaction Listener
+     * Tracks coordinates to power the "magnet" effect on background rings.
+     */
     useEffect(() => {
         const handleMouseMove = (e) => {
             setMousePos({ x: e.clientX, y: e.clientY });
@@ -34,7 +52,11 @@ const InteractiveBackground = () => {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // Calculate distance from mouse to center for hover effect
+    /**
+     * Dynamic Ripple Styling
+     * Calculates the scale and opacity of background rings based on their 
+     * distance from the user's cursor.
+     */
     const getCircleStyle = (index, baseSize) => {
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
@@ -45,6 +67,8 @@ const InteractiveBackground = () => {
 
         const radius = baseSize / 2;
         const distanceFromRipple = Math.abs(distance - radius);
+
+        // If the mouse is within 100px of a ring, it "paints" and glows.
         const isNear = distanceFromRipple < 100;
 
         return {
@@ -59,10 +83,10 @@ const InteractiveBackground = () => {
 
     return (
         <div className={styles.container} data-theme={theme}>
-            {/* Background Dot Grid */}
+            {/* Structural Foundation Layer */}
             <div className={styles.dotGrid} />
 
-            {/* Static Centered Ripples - Now Responsive to Mouse */}
+            {/* Reactive Ripple Layer */}
             <div className={styles.rippleContainer}>
                 {circles.map(i => (
                     <div
@@ -73,14 +97,14 @@ const InteractiveBackground = () => {
                 ))}
             </div>
 
-            {/* Subtle Snowflakes (Festive override, no Santa/Deer) */}
+            {/* Denser Atmospheric Layer (Snowfall) */}
             <div className={styles.snowflakesContainer}>
                 {snowflakes.map(id => (
                     <Snowflake key={id} />
                 ))}
             </div>
 
-            {/* Smooth Vignette */}
+            {/* Depth & Focus Layer */}
             <div className={styles.vignette} />
         </div>
     );

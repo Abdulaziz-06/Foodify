@@ -2,8 +2,17 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import styles from './ProductCard.module.css';
 
+/**
+ * Product Card Component
+ * A compact preview of a food item, shown in the search results grid.
+ * Displays the product image, name, brand, and its Nutri-Score grade.
+ */
 const ProductCard = ({ product }) => {
-    // Robust name extraction - ELIMINATE UNKNOWN
+    /**
+     * Smart Name Extraction
+     * Attempts to find the most descriptive name for the product.
+     * If the standard name is missing, it falls back to brand/category combinations.
+     */
     const getBestName = (p) => {
         const name = p.product_name || p.product_name_en || p.generic_name;
         if (name && name.trim() && name.toLowerCase() !== 'unknown') return name;
@@ -24,13 +33,13 @@ const ProductCard = ({ product }) => {
     const grade = product.nutrition_grades ? product.nutrition_grades.toLowerCase() : '';
     const id = product.code || product._id;
 
-    // Use HIGH RES images to ensure quality is "Perfect"
-    // OpenFoodFacts provides: image_front_url (large), image_front_small_url (small)
+    // Use high-resolution images where available to ensure a premium look.
     const displayImage = product.image_front_url || product.image_url || product.image_front_small_url;
 
     return (
         <div>
             <Link to={`/product/${id}`} className={styles.card}>
+                {/* Visual Identity Layer */}
                 <div className={styles.imageSection}>
                     {displayImage ? (
                         <img
@@ -43,6 +52,7 @@ const ProductCard = ({ product }) => {
                         <div className={styles.noImage}>Pure Ingredients Inside</div>
                     )}
 
+                    {/* Nutri-Score Overlay Badge */}
                     {['a', 'b', 'c', 'd', 'e'].includes(grade) && (
                         <div className={styles.gradeBadge} data-grade={grade}>
                             {grade}
@@ -50,6 +60,7 @@ const ProductCard = ({ product }) => {
                     )}
                 </div>
 
+                {/* Product Information Layer */}
                 <div className={styles.info}>
                     <span className={styles.categoryInfo}>
                         {product.categories?.split(',')[0]?.replace(/^[a-z]{2}:/, '') || "Natural"}

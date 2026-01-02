@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useProducts } from '../context/ProductContext';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
@@ -7,19 +8,53 @@ import Filters from '../components/Filters';
 import Navbar from '../components/Navbar';
 import styles from './Home.module.css';
 
+/**
+ * Home Component
+ * The central hub of Foodify. Provides a modern hero section for searching 
+ * and a dynamic, infinite-scrolling grid for product discovery.
+ */
 const Home = () => {
     const { products, loading, error, hasMore, loadMore, searchQuery, setSearchQuery } = useProducts();
+    const location = useLocation();
     const observerTarget = useRef(null);
+
+    // --- Hero Visuals ---
     const [rotatingIndex, setRotatingIndex] = useState(0);
     const keywords = ["Scan.", "Search.", "Eat."];
 
+    /**
+     * Hero Word Rotation
+     * Circles through high-impact action words to engage the user.
+     */
     useEffect(() => {
         const interval = setInterval(() => {
             setRotatingIndex(prev => (prev + 1) % keywords.length);
         }, 2500);
         return () => clearInterval(interval);
-    }, []);
+    }, [keywords.length]);
 
+    /**
+     * Smart Navigation Management
+     * Detects if the user was sent here from another page (like Navbar) 
+     * specificially to view products, and smooth-scrolls them down.
+     */
+    useEffect(() => {
+        if (location.state?.scrollTo) {
+            const section = document.getElementById(location.state.scrollTo);
+            if (section) {
+                // Short timeout gives the browser time to finish painting the initial layout.
+                setTimeout(() => {
+                    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    }, [location]);
+
+    /**
+     * Infinite Scroll Engine
+     * Uses the Intersection Observer API to detect when the user reaches 
+     * the bottom of the grid and automatically loads the next page of products.
+     */
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
@@ -46,6 +81,7 @@ const Home = () => {
             <Navbar />
 
             <main className={styles.container}>
+                {/* Hero Section: High-impact search and branding */}
                 <section className={styles.hero}>
                     <div className={styles.heroContent}>
                         <h1 className={styles.title}>
@@ -75,7 +111,13 @@ const Home = () => {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                <button className={styles.searchBtn}>
+                                <button
+                                    className={styles.searchBtn}
+                                    onClick={() => {
+                                        const section = document.getElementById('product-section');
+                                        if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    }}
+                                >
                                     Find Food <ChevronRight size={18} />
                                 </button>
                             </div>
@@ -83,6 +125,7 @@ const Home = () => {
                     </div>
                 </section>
 
+                {/* Discovery Section: Product filtering and results grid */}
                 <div className={styles.contentSection} id="product-section">
                     <div className={styles.sectionHeader}>
                         <h2 className={styles.sectionTitle}>Explore Products</h2>
@@ -99,13 +142,15 @@ const Home = () => {
                         ))}
                     </div>
 
+                    {/* Progress Indicator */}
                     {loading && (
                         <div className={styles.loadingContainer}>
                             <div className={styles.loader}></div>
-                            <p>Discovering ingredients...</p>
+                            <p>Discovering Food...</p>
                         </div>
                     )}
 
+                    {/* Empty Search Feedback */}
                     {!loading && products.length === 0 && !error && (
                         <div className={styles.emptyState}>
                             <h3>No results for "{searchQuery}"</h3>
@@ -113,8 +158,10 @@ const Home = () => {
                         </div>
                     )}
 
+                    {/* Invisible trigger for Infinite Scroll */}
                     <div ref={observerTarget} className={styles.loadTrigger} />
 
+                    {/* Shelf End Feedback */}
                     {!hasMore && products.length > 0 && (
                         <div className={styles.endMessage}>
                             You've reached the end of the aisle! 🍏
