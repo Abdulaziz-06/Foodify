@@ -49,6 +49,68 @@
     box-shadow: 0 12px 35px -10px rgba(0, 0, 0, 0.1);
 }
 
+.desktopOnly {
+    display: flex;
+}
+
+.mobileActions {
+    display: none;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobileVegContainer {
+    display: none;
+}
+
+.menuToggle {
+    background: var(--bg-primary);
+    border: 1.5px solid var(--surface-border);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: var(--transition-smooth);
+}
+
+.mobileMenu {
+    position: absolute;
+    top: 80px;
+    left: 0;
+    right: 0;
+    background: var(--surface-glass);
+    backdrop-filter: var(--glass-blur);
+    border: 1.5px solid var(--surface-border);
+    border-radius: 24px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: var(--shadow-xl);
+    pointer-events: auto;
+}
+
+.mobileNavItem {
+    background: transparent;
+    border: none;
+    padding: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    border-radius: 16px;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+}
+
+.mobileNavItem:active {
+    background: var(--bg-secondary);
+}
+
 .navItem {
     background: transparent;
     border: none;
@@ -98,23 +160,33 @@
 }
 
 @media (max-width: 768px) {
-    .navLinks {
-        padding: 4px;
+    .desktopOnly {
+        display: none;
     }
 
-    .navItem {
-        padding: 8px 14px;
-        font-size: 13px;
+    .mobileActions {
+        display: flex;
     }
 
     .logoWrapper {
         font-size: 26px;
     }
 
-    .capAbsolute {
-        width: 32px;
-        height: 32px;
-        top: -10px;
-        left: -8px;
+    .mobileVegContainer {
+        display: block;
+        margin-right: 8px;
+    }
+
+    .navbar {
+        top: 16px;
+        width: calc(100% - 32px);
+    }
+
+    .menuToggle,
+    .themeToggle {
+        width: 52px;
+        height: 52px;
+        border-width: 2px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 }

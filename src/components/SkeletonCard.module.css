@@ -1,0 +1,70 @@
+.skeletonCard {
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-border);
+    border-radius: 28px;
+    overflow: hidden;
+    height: 100%;
+}
+
+.imageSkeleton {
+    height: 240px;
+    background: linear-gradient(90deg,
+            var(--bg-secondary) 25%,
+            var(--surface-border) 50%,
+            var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+}
+
+.infoSkeleton {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.categorySkeleton {
+    width: 60px;
+    height: 12px;
+    background: var(--surface-border);
+    border-radius: 4px;
+}
+
+.titleSkeleton {
+    width: 80%;
+    height: 24px;
+    background: var(--surface-border);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.footerSkeleton {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.brandSkeleton {
+    width: 100px;
+    height: 14px;
+    background: var(--surface-border);
+    border-radius: 4px;
+}
+
+.btnSkeleton {
+    width: 60px;
+    height: 24px;
+    background: var(--surface-border);
+    border-radius: 20px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}

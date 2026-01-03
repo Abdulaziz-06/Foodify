@@ -26,9 +26,10 @@
 }
 
 [data-theme='dark'] {
-  --bg-primary: #0a0a0a;
-  --bg-secondary: #121212;
-  --surface-glass: rgba(18, 18, 18, 0.8);
+  --bg-primary: #1c1c1c;
+  /* New dark grey from user image */
+  --bg-secondary: #242424;
+  --surface-glass: rgba(28, 28, 28, 0.82);
   --surface-border: rgba(255, 255, 255, 0.1);
   --text-primary: #f9fafb;
   --text-secondary: #9ca3af;

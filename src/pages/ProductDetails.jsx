@@ -76,9 +76,19 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className={styles.loadingContainer}>
-                <div className={styles.loader}></div>
-                <p>Retrieving nutrition data...</p>
+            <div className={styles.pageWrapper}>
+                <Navbar />
+                <main className={styles.container}>
+                    <div className={styles.skeletonDetails}>
+                        <div className={styles.skeletonImage} />
+                        <div className={styles.skeletonInfo}>
+                            <div className={styles.skeletonLine} />
+                            <div className={styles.skeletonLineLarge} />
+                            <div className={styles.skeletonBox} />
+                            <div className={styles.skeletonBox} />
+                        </div>
+                    </div>
+                </main>
             </div>
         );
     }
@@ -100,7 +110,13 @@ const ProductDetails = () => {
     }
 
     const name = getBestName(product);
-    const grade = product.nutrition_grades?.toLowerCase() || 'unknown';
+    const rawGrade = product.nutrition_grades?.toLowerCase() || 'unknown';
+    // Map long strings to short display versions for the circle
+    const displayGradeMap = {
+        'not-applicable': 'N/A',
+        'unknown': '?',
+    };
+    const displayGrade = displayGradeMap[rawGrade] || rawGrade.toUpperCase();
     const nutriments = product.nutriments || {};
 
     // --- Data Processing ---
@@ -178,11 +194,13 @@ const ProductDetails = () => {
                             <div className={styles.gradeCard}>
                                 <span className={styles.statLabel}>Nutri-Score</span>
                                 <div className={styles.gradeWrapper}>
-                                    <div className={styles.gradeCircle} data-grade={grade}>
-                                        {grade}
+                                    <div className={styles.gradeCircle} data-grade={rawGrade}>
+                                        {displayGrade}
                                     </div>
                                     <span className={styles.gradeText}>
-                                        {grade === 'unknown' ? 'Not Evaluated' : `Grade ${grade.toUpperCase()}`}
+                                        {rawGrade === 'unknown' ? 'Not Evaluated' :
+                                            rawGrade === 'not-applicable' ? 'Not Applicable' :
+                                                `Grade ${rawGrade.toUpperCase()}`}
                                     </span>
                                 </div>
                             </div>

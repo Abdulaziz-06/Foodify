@@ -1,0 +1,65 @@
+.container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.toggle {
+    width: 52px;
+    height: 28px;
+    background: var(--bg-secondary);
+    border: 1.5px solid var(--surface-border);
+    border-radius: 99px;
+    position: relative;
+    padding: 2px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.toggle.active {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.1);
+}
+
+.handle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.innerDot {
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+.ripple {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 30px;
+    background: #059669;
+    border-radius: 99px;
+    margin-left: -25px;
+    margin-top: -15px;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0;
+}

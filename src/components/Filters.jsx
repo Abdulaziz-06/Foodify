@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check } from 'lucide-react';
+import VegToggle from './VegToggle';
 import styles from './Filters.module.css';
 
 const CustomDropdown = ({ label, value, options, onChange, placeholder }) => {
@@ -47,6 +48,7 @@ const CustomDropdown = ({ label, value, options, onChange, placeholder }) => {
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         className={styles.dropdownList}
                     >
+                        <div className={styles.drawerHandle} />
                         {options.map((option, index) => (
                             <button
                                 key={`${option.id || option.value}-${index}`}
@@ -68,7 +70,7 @@ const CustomDropdown = ({ label, value, options, onChange, placeholder }) => {
 };
 
 const Filters = () => {
-    const { categories, selectedCategory, setSelectedCategory, sortBy, setSortBy, setSearchQuery } = useProducts();
+    const { categories, selectedCategory, setSelectedCategory, sortBy, setSortBy, setSearchQuery, vegOnly } = useProducts();
 
     const fallbackCategories = [
         { id: '', name: 'All Categories' },
@@ -82,6 +84,25 @@ const Filters = () => {
     const displayCategories = categories && categories.length > 0
         ? [{ id: '', name: 'All Categories' }, ...categories]
         : fallbackCategories;
+
+    // Filter out Meats if Veg Only is active
+    const filteredCategories = vegOnly
+        ? displayCategories.filter(cat => {
+            const id = (cat.id || '').toLowerCase();
+            const name = (cat.name || '').toLowerCase();
+            return !id.includes('meat') && !name.includes('meat') && !id.includes('charcuterie');
+        })
+        : displayCategories;
+
+    // If currently selected category is Meats and Veg Only is toggled, reset to All
+    useEffect(() => {
+        if (vegOnly && selectedCategory && (
+            selectedCategory.toLowerCase().includes('meat') ||
+            (displayCategories.find(c => c.id === selectedCategory)?.name.toLowerCase().includes('meat'))
+        )) {
+            setSelectedCategory('');
+        }
+    }, [vegOnly, selectedCategory, setSelectedCategory, displayCategories]);
 
     const sortOptions = [
         { value: 'unique_scans_n', label: 'Popularity' },
@@ -100,12 +121,18 @@ const Filters = () => {
             <CustomDropdown
                 label="Category"
                 value={selectedCategory}
-                options={displayCategories}
+                options={filteredCategories}
                 onChange={handleCategoryChange}
                 placeholder="All Categories"
             />
 
             <div className={styles.divider} />
+
+            <div className={styles.desktopVegContainer}>
+                <VegToggle />
+            </div>
+
+            <div className={`${styles.divider} ${styles.desktopOnlyDivider}`} />
 
             <CustomDropdown
                 label="Sort By"
