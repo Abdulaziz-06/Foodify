@@ -4,6 +4,7 @@ const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
     const [theme, setTheme] = useState(() => {
+        // Prioritize 'light' as the starting theme for a fresh experience
         const saved = localStorage.getItem('foodify-theme');
         return saved || 'light';
     });

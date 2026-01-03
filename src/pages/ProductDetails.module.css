@@ -127,21 +127,22 @@
 .gradeWrapper {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
 }
 
 .gradeCircle {
-    width: 54px;
-    height: 54px;
-    border-radius: 15px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     color: white;
     text-transform: uppercase;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
 }
 
 .gradeCircle[data-grade="a"] {
@@ -164,9 +165,10 @@
     background: var(--grade-e);
 }
 
-.gradeCircle[data-grade="unknown"] {
+.gradeCircle[data-grade="unknown"],
+.gradeCircle[data-grade="not-applicable"] {
     background: var(--text-secondary);
-    opacity: 0.5;
+    opacity: 0.8;
 }
 
 .gradeText {
@@ -268,6 +270,68 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+.skeletonDetails {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 48px;
+    opacity: 0.6;
+}
+
+.skeletonImage {
+    height: 500px;
+    background: var(--surface-glass);
+    border-radius: 32px;
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(90deg,
+            var(--bg-secondary) 25%,
+            var(--surface-border) 50%,
+            var(--bg-secondary) 75%);
+    background-size: 200% 100%;
+}
+
+.skeletonInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.skeletonLine {
+    height: 20px;
+    width: 30%;
+    background: var(--surface-border);
+    border-radius: 4px;
+}
+
+.skeletonLineLarge {
+    height: 60px;
+    width: 80%;
+    background: var(--surface-border);
+    border-radius: 12px;
+}
+
+.skeletonBox {
+    height: 120px;
+    width: 100%;
+    background: var(--surface-border);
+    border-radius: 24px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@media (max-width: 968px) {
+    .skeletonDetails {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -20,7 +20,11 @@ api.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
+        if (!originalRequest) return Promise.reject(error); // Guard against missing config
         if (!originalRequest._retryCount) originalRequest._retryCount = 0;
+
+        // Don't retry if the request was cancelled
+        if (axios.isCancel(error)) return Promise.reject(error);
 
         // Retry on network errors or timeouts, up to 2 times
         if (originalRequest._retryCount < 2 &&
@@ -45,7 +49,7 @@ api.interceptors.response.use(
  * - Category Filtering: Limits results to specific food groups.
  * - Sorting & Pagination: Handles infinite scroll and relevance sorting.
  */
-export const getProducts = async (page = 1, limit = 24, searchQuery = '', category = '', sort = 'unique_scans_n', options = {}) => {
+export const getProducts = async (page = 1, limit = 24, searchQuery = '', category = '', sort = 'unique_scans_n', vegOnly = false, options = {}) => {
     // If the user enters a barcode (all digits), we prioritize a direct lookup for speed and accuracy.
     if (searchQuery && /^\d+$/.test(searchQuery)) {
         try {
@@ -61,15 +65,24 @@ export const getProducts = async (page = 1, limit = 24, searchQuery = '', catego
     }
 
     // Otherwise, we build a search query using the Open Food Facts process script.
-    let url = `/cgi/search.pl?action=process&json=true&page=${page}&page_size=${limit}&sort_by=${sort}`;
+    // If we have a search query, we omit sort_by to let the API use its default relevance scoring,
+    // unless a specific sort has been requested.
+    const useRelevance = searchQuery && sort === 'unique_scans_n';
+    let url = `/cgi/search.pl?action=process&json=true&page=${page}&page_size=${limit}${useRelevance ? '' : `&sort_by=${sort}`}`;
+    let tagIndex = 0;
 
     if (searchQuery) {
         url += `&search_terms=${encodeURIComponent(searchQuery)}`;
     }
 
     if (category) {
-        // We use tag filters to ensure we only get products within the selected category.
-        url += `&tagtype_0=categories&tag_contains_0=contains&tag_0=${encodeURIComponent(category)}`;
+        url += `&tagtype_${tagIndex}=categories&tag_contains_${tagIndex}=contains&tag_${tagIndex}=${encodeURIComponent(category)}`;
+        tagIndex++;
+    }
+
+    if (vegOnly) {
+        url += `&tagtype_${tagIndex}=labels&tag_contains_${tagIndex}=contains&tag_${tagIndex}=en:vegetarian`;
+        tagIndex++;
     }
 
     const response = await api.get(url, options);
