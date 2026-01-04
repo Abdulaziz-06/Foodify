@@ -106,14 +106,12 @@ const Filters = () => {
 
     const sortOptions = [
         { value: 'unique_scans_n', label: 'Popularity' },
-        { value: 'product_name', label: 'Name (A-Z)' },
+        { value: 'nutrition_grades_tags', label: 'Nutrition Grade' },
         { value: 'created_t', label: 'Newest First' }
     ];
 
-    // Clear search when category changes
     const handleCategoryChange = (categoryId) => {
         setSelectedCategory(categoryId);
-        setSearchQuery(''); // Clear search when category is selected
     };
 
     return (

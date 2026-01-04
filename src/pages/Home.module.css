@@ -203,6 +203,25 @@
     letter-spacing: -0.5px;
 }
 
+.resetBtn {
+    margin-top: 16px;
+    padding: 10px 24px;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: inline-block;
+}
+
+.resetBtn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 0 20px 60px;

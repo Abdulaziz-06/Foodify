@@ -17,9 +17,9 @@ import Navbar from '../components/Navbar';
 import styles from './ProductDetails.module.css';
 
 /**
+/**
  * Product Details Page
- * Provides a comprehensive view of a specific food item's ingredients and nutrition.
- * Handles data fetching, error management, and displays warnings for incomplete data.
+ * Displays detailed ingredient and nutrition information for a specific product.
  */
 const ProductDetails = () => {
     const { id } = useParams();
@@ -28,11 +28,7 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    /**
-     * Smart Name Extractor
-     * Cycles through multiple fields to find the most accurate name.
-     * Fallbacks: Primary Name -> English Name -> Generic Name -> Brand/Category summary.
-     */
+    // Extract the most accurate product name from available fields
     const getBestName = (p) => {
         const name = p.product_name || p.product_name_en || p.generic_name;
         if (name && name.trim() && name.toLowerCase() !== 'unknown') return name;
@@ -48,10 +44,7 @@ const ProductDetails = () => {
         return "Natural Food Selection";
     };
 
-    /**
-     * Data Initialization
-     * Fetches current product data based on the URL barcode.
-     */
+    // Fetch product data using the barcode from URL
     useEffect(() => {
         const fetchProduct = async () => {
             try {

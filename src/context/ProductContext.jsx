@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { getProducts } from '../services/api';
+import { getProducts, getCategories } from '../services/api';
 
 /**
  * Product Context
@@ -15,7 +15,8 @@ export const useProducts = () => useContext(ProductContext);
 export const ProductProvider = ({ children }) => {
     // --- State Storage ---
     const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -24,7 +25,7 @@ export const ProductProvider = ({ children }) => {
     const [hasMore, setHasMore] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [sortBy, setSortBy] = useState('unique_scans_n');
+    const [sortBy, setSortBy] = useState('nutrition_grades_tags');
     const [vegOnly, setVegOnly] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
@@ -32,6 +33,15 @@ export const ProductProvider = ({ children }) => {
     const debounceTimeout = useRef(null);
     const abortController = useRef(null);
     const isLoadingRef = useRef(false);
+
+    // --- Data Initialization ---
+    useEffect(() => {
+        const fetchCategories = async () => {
+            const cats = await getCategories();
+            setCategories(cats);
+        };
+        fetchCategories();
+    }, []);
 
     // --- Network Status Monitor ---
     useEffect(() => {
@@ -47,33 +57,7 @@ export const ProductProvider = ({ children }) => {
         };
     }, []);
 
-    /**
-     * Data Reset
-     * Clears the product list and resets pagination. 
-     * Usually called when the user changes a search term or category.
-     */
-    const resetList = useCallback(() => {
-        setProducts([]);
-        setPage(1);
-        setHasMore(true);
-        setError(null);
-        setIsSearching(searchQuery.length > 0 || selectedCategory !== '');
-    }, [searchQuery, selectedCategory]);
-
-    /**
-     * Automatic Reset
-     * Whenever a filter or search query changes, we start back from page 1.
-     */
-    useEffect(() => {
-        resetList();
-    }, [searchQuery, selectedCategory, sortBy, vegOnly, resetList]);
-
-    /**
-     * Core Data Fetcher
-     * Handles the complexity of fetching items from the Open Food Facts API.
-     * 
-     * @param {boolean} isNewSearch - If true, replaces the list rather than appending (used for resets).
-     */
+    // --- Core Data Fetcher ---
     const loadProducts = useCallback(async (isNewSearch = false, targetPage = page) => {
         if (!navigator.onLine) {
             setError("404 Error: No internet available.");
@@ -81,124 +65,183 @@ export const ProductProvider = ({ children }) => {
             return;
         }
 
-        if (isLoadingRef.current && !isNewSearch) return; // Use isLoadingRef to prevent multiple pagination loads
+        // Prevent parallel fetches for the same page (pagination lock)
+        // But allow new searches to override current fetches
+        if (isLoadingRef.current && !isNewSearch) return;
 
-        // If a request is already in progress, we cancel it to avoid "race conditions"
-        // where old results might arrive after new ones.
+        // Cancel any pending request to prevent race conditions
         if (abortController.current) {
             abortController.current.abort();
         }
-        abortController.current = new AbortController();
 
-        isLoadingRef.current = true; // Set pagination lock
-        setLoading(true); // Set general loading state
+        // Create a local reference to the controller for THIS SPECIFIC request
+        const currentController = new AbortController();
+        abortController.current = currentController;
+
+        isLoadingRef.current = true;
+        setLoading(true);
         setError(null);
 
         try {
+            // If it's a new search, we might want to clear products visually beforehand
+            // But we already do that in the state setters for better UX
+
+            // If sorting by Grade, we need a larger batch (100) because we strictly filter out 
+            const limit = sortBy === 'nutrition_grades_tags' ? 100 : 24;
+
             const data = await getProducts(
                 targetPage,
-                24,
+                limit,
                 searchQuery,
                 selectedCategory,
                 sortBy,
                 vegOnly,
-                { signal: abortController.current.signal }
+                { signal: currentController.signal }
             );
 
-            if (data.products && data.products.length > 0) {
-                // If it's a new search, we clear old items. Otherwise, we add to them (for infinite scroll).
-                setProducts(prev => isNewSearch ? data.products : [...prev, ...data.products]);
+            // ONLY process results if this is still the active request
+            if (abortController.current === currentController) {
+                if (data.products && data.products.length > 0) {
+                    setProducts(prev => {
+                        const merged = isNewSearch ? data.products : [...prev, ...data.products];
 
-                // If we got fewer items than requested, it means we've reached the end of the database.
-                if (data.products.length < 24) setHasMore(false);
-            } else {
-                if (isNewSearch) setProducts([]);
-                setHasMore(false);
+                        // Global Sort: Ensure entire list is ordered A->B->C... 
+                        // This creates a visual shift but guarantees strict order.
+                        if (sortBy === 'nutrition_grades_tags') {
+                            return merged.sort((a, b) => {
+                                const gradeA = (a.nutrition_grades_tags?.[0] || 'z').toLowerCase();
+                                const gradeB = (b.nutrition_grades_tags?.[0] || 'z').toLowerCase();
+                                return gradeA.localeCompare(gradeB);
+                            });
+                        }
+                        return merged;
+                    });
+                    // If we got fewer than requested, we're likely done
+                    if (data.products.length < 24) setHasMore(false);
+                    else setHasMore(true);
+                } else {
+                    if (isNewSearch) setProducts([]);
+                    setHasMore(false);
+                }
             }
         } catch (err) {
-            // We ignore cancellations because they are triggered intentionally by our cancel logic.
             if (!axios.isCancel(err)) {
                 console.error("Problem loading products:", err);
-
-                // Detailed error mapping
                 if (!navigator.onLine || err.code === 'ERR_NETWORK') {
-                    setError("404 Error: No internet connection. Please check your network.");
+                    setError("404 Error: No internet connection.");
                 } else if (err.response?.status === 429) {
-                    setError("Too many requests. Please wait a moment before searching again.");
-                } else if (err.response?.status === 500) {
-                    setError("The food database is currently having trouble. We've paused loading to avoid too many requests.");
-                    setHasMore(false); // Stop trying to load more if server is failing
+                    setError("Too many requests. Please wait a moment.");
                 } else {
-                    setError('We couldn\'t load the products right now. Please try again later.');
+                    setError('We couldn\'t load the products. Please try again.');
                 }
             }
         } finally {
-            // Only update loading state if the request wasn't cancelled mid-way.
-            if (!abortController.current?.signal.aborted) {
-                isLoadingRef.current = false; // Release pagination lock
-                setLoading(false); // Release general loading state
-                setIsSearching(false); // Clear typing/searching state
+            // Only turn off loading if this request is still active
+            if (abortController.current === currentController) {
+                isLoadingRef.current = false;
+                setLoading(false);
+                setIsSearching(false);
             }
         }
     }, [page, searchQuery, selectedCategory, sortBy, vegOnly]);
 
-    /**
-     * Smart Fetch Trigger
-     * Listens for changes to filters or page numbers.
-     * Uses a 500ms "debounce" for search queries so we don't spam the API while the user is typing.
-     */
+    // --- Effect: Watcher for Changes ---
+    // This SINGLE effect handles all re-fetching when filters change.
+    // It replaces the multiple confusing effects from before.
     useEffect(() => {
-        // Don't trigger if offline
-        if (!isOnline) {
-            setError("No internet available.");
-            return;
-        }
-
         const isSearch = searchQuery.length > 0;
-        const delay = isSearch ? 700 : 0; // Balanced typing delay
+        const delay = isSearch ? 500 : 0; // Debounce mainly for text search
 
         if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
 
         debounceTimeout.current = setTimeout(() => {
+            // If page is 1, it's a "new search" effectively (or a reset)
+            // We pass true for isNewSearch if page === 1 to force replacement
             loadProducts(page === 1, page);
         }, delay);
 
         return () => clearTimeout(debounceTimeout.current);
-    }, [page, searchQuery, selectedCategory, sortBy, vegOnly, isOnline, loadProducts]);
+    }, [page, searchQuery, selectedCategory, sortBy, vegOnly, loadProducts]);
+
+
+    // --- Enhanced State Setters ---
+    // These update the state AND reset the page to 1, guaranteeing a "New Search" trigger
+
+    const handleSearchChange = (query) => {
+        if (query === searchQuery) return;
+        setSearchQuery(query);
+        setPage(1);
+        setIsSearching(true);
+        // Clear old results to indicate a new search
+        setProducts([]);
+    };
+
+    const handleCategoryChange = (cat) => {
+        if (cat === selectedCategory) return;
+        setSelectedCategory(cat);
+        setPage(1);
+        setSearchQuery(''); // Clear search when switching category
+        setIsSearching(true);
+        setProducts([]);
+    };
+
+    const handleSortChange = (sort) => {
+        if (sort === sortBy) return;
+        setSortBy(sort);
+        setPage(1);
+        setIsSearching(true);
+        setProducts([]);
+    };
+
+    const handleVegToggle = (val) => {
+        if (val === vegOnly) return;
+        setVegOnly(val);
+        setPage(1);
+        setIsSearching(true);
+        setProducts([]);
+
+        // Edge Case: If we are in a "Meat" category and toggle Veg, we might need to reset category?
+        // The Filters component handles hiding incompatible categories, but if one is *already* selected:
+        if (val === true && selectedCategory) {
+            // Check if selected category is meat-based (simple heuristic)
+            const isMeat = selectedCategory.toLowerCase().includes('meat');
+            if (isMeat) {
+                setSelectedCategory(''); // Reset to all if incompatible
+            }
+        }
+    };
 
     const forceSearch = () => {
         if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+        setIsSearching(true);
+        setProducts([]);
+        setPage(1);
         loadProducts(true, 1);
     };
 
-    /**
-     * Pagination Helper
-     * Moves to the next page of results, which triggers the fetch cycle.
-     */
     const loadMore = () => {
-        // Prevent multiple simultaneous triggers and respect offline/error states
         if (!loading && !isLoadingRef.current && hasMore && isOnline && !error) {
             setPage(prev => prev + 1);
         }
     };
 
-    // --- Exposed Context Values ---
     const value = {
         products,
+        categories,
         loading,
         isSearching,
         error,
         hasMore,
         loadMore,
         searchQuery,
-        setSearchQuery,
+        setSearchQuery: handleSearchChange,
         forceSearch,
         selectedCategory,
-        setSelectedCategory,
+        setSelectedCategory: handleCategoryChange,
         sortBy,
-        setSortBy,
+        setSortBy: handleSortChange,
         vegOnly,
-        setVegOnly,
+        setVegOnly: handleVegToggle,
         isOnline
     };
 

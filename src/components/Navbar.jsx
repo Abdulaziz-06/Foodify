@@ -7,9 +7,9 @@ import VegToggle from './VegToggle';
 import styles from './Navbar.module.css';
 
 /**
+/**
  * Navbar Component
- * The main navigation bar that sits at the top of every page.
- * It provides branding, easy access to search, contact info, and theme switching.
+ * Main navigation bar with branding, search access, and theme toggle.
  */
 const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
@@ -17,11 +17,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    /**
-     * Smart Navigation
-     * If the user is on the Home page, we smooth-scroll them to the products.
-     * If they are on a different page, we navigate home first and then scroll.
-     */
+    // Navigate to products section, handling page transitions if needed
     const scrollToProducts = (e) => {
         e.preventDefault();
         setIsMenuOpen(false);

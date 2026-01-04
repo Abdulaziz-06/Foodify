@@ -10,12 +10,12 @@ import Navbar from '../components/Navbar';
 import styles from './Home.module.css';
 
 /**
+/**
  * Home Component
- * The central hub of Foodify. Provides a modern hero section for searching 
- * and a dynamic, infinite-scrolling grid for product discovery.
+ * Landing page with hero section and infinite-scrolling product grid.
  */
 const Home = () => {
-    const { products, loading, isSearching, error, hasMore, loadMore, searchQuery, setSearchQuery, setSelectedCategory, forceSearch } = useProducts();
+    const { products, loading, isSearching, error, hasMore, loadMore, searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, forceSearch, vegOnly, setVegOnly, categories } = useProducts();
     const location = useLocation();
     const observerTarget = useRef(null);
 
@@ -38,11 +38,7 @@ const Home = () => {
         return () => clearInterval(interval);
     }, [keywords.length, placeholders.length]);
 
-    /**
-     * Smart Navigation Management
-     * Detects if the user was sent here from another page (like Navbar) 
-     * specificially to view products, and smooth-scrolls them down.
-     */
+    // Scroll to products if redirected from another page
     useEffect(() => {
         if (location.state?.scrollTo) {
             const section = document.getElementById(location.state.scrollTo);
@@ -55,11 +51,7 @@ const Home = () => {
         }
     }, [location]);
 
-    /**
-     * Infinite Scroll Engine
-     * Uses the Intersection Observer API to detect when the user reaches 
-     * the bottom of the grid and automatically loads the next page of products.
-     */
+    // Infinite Scroll: Load more products when user reaches the bottom
     useEffect(() => {
         const observer = new IntersectionObserver(
             entries => {
@@ -118,9 +110,6 @@ const Home = () => {
                                         value={searchQuery}
                                         onChange={(e) => {
                                             setSearchQuery(e.target.value);
-                                            if (e.target.value.length > 0) {
-                                                setSelectedCategory(''); // Reset category when searching
-                                            }
                                         }}
                                         onFocus={() => setIsInputFocused(true)}
                                         onBlur={() => setIsInputFocused(false)}
@@ -201,10 +190,29 @@ const Home = () => {
                     </div>
 
                     {/* Empty Search Feedback */}
-                    {!loading && !isSearching && products.length === 0 && !error && searchQuery && (
+                    {!loading && !isSearching && products.length === 0 && !error && (
                         <div className={styles.emptyState}>
-                            <h3>No results for "{searchQuery}"</h3>
-                            <p>Try searching for brand names or common food items.</p>
+                            <h3>
+                                {vegOnly && selectedCategory
+                                    ? `No vegetarian options found in ${categories.find(c => c.id === selectedCategory)?.name || selectedCategory}`
+                                    : searchQuery
+                                        ? `No results for "${searchQuery}"`
+                                        : `No products found`}
+                            </h3>
+                            <p>Try adjusting your filters or searching for something else.</p>
+                            {(searchQuery || selectedCategory || vegOnly) && (
+                                <button
+                                    className={styles.resetBtn}
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setSelectedCategory('');
+                                        setVegOnly(false);
+                                        forceSearch();
+                                    }}
+                                >
+                                    Clear all filters
+                                </button>
+                            )}
                         </div>
                     )}
 
