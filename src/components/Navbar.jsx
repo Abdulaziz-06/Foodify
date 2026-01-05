@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { Sun, Moon, Menu, X, ShoppingCart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import VegToggle from './VegToggle';
 import styles from './Navbar.module.css';
@@ -13,6 +14,7 @@ import styles from './Navbar.module.css';
  */
 const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
+    const { toggleCart, getTotalItems } = useCart();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
@@ -47,6 +49,18 @@ const Navbar = () => {
                     <button onClick={scrollToProducts} className={styles.navItem}>Explore</button>
                     <Link to="/contact" className={styles.navItem}>Contact</Link>
 
+                    {/* Cart Button */}
+                    <button
+                        className={styles.cartButton}
+                        onClick={toggleCart}
+                        aria-label="Open Cart"
+                    >
+                        <ShoppingCart size={22} />
+                        {getTotalItems() > 0 && (
+                            <span className={styles.cartBadge}>{getTotalItems()}</span>
+                        )}
+                    </button>
+
                     {/* Theme Toggle Button */}
                     <button
                         className={styles.themeToggle}
@@ -77,6 +91,18 @@ const Navbar = () => {
                     <div className={styles.mobileVegContainer}>
                         <VegToggle />
                     </div>
+
+                    {/* Cart Button */}
+                    <button
+                        className={styles.cartButton}
+                        onClick={toggleCart}
+                        aria-label="Open Cart"
+                    >
+                        <ShoppingCart size={22} />
+                        {getTotalItems() > 0 && (
+                            <span className={styles.cartBadge}>{getTotalItems()}</span>
+                        )}
+                    </button>
 
                     <button
                         className={styles.themeToggle}

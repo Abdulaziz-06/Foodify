@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Plus, Minus } from 'lucide-react';
+import { useCart } from '../context/CartContext';
 import styles from './ProductCard.module.css';
 
 /**
@@ -7,6 +9,8 @@ import styles from './ProductCard.module.css';
  * Compact preview of a food item for the search grid.
  */
 const ProductCard = ({ product }) => {
+    const { addToCart, cartItems, updateQuantity } = useCart();
+
     // Extract the most descriptive name possible
     const getBestName = (p) => {
         const name = p.product_name || p.product_name_en || p.generic_name;
@@ -31,8 +35,36 @@ const ProductCard = ({ product }) => {
     // Use high-resolution images where available to ensure a premium look.
     const displayImage = product.image_front_url || product.image_url || product.image_front_small_url;
 
+    // Check if item is in cart and get its quantity
+    const cartItem = cartItems.find(item => item.id === id);
+    const itemQuantity = cartItem ? cartItem.quantity : 0;
+
+    const handleAddToCart = (e) => {
+        e.preventDefault(); // Prevent navigation to product details
+        e.stopPropagation();
+        addToCart({
+            id: id,
+            name: name,
+            brand: product.brands?.split(',')[0] || 'Premium',
+            image: displayImage,
+            grade: grade
+        });
+    };
+
+    const handleIncrement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        updateQuantity(id, itemQuantity + 1);
+    };
+
+    const handleDecrement = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        updateQuantity(id, itemQuantity - 1);
+    };
+
     return (
-        <div>
+        <div className={styles.cardWrapper}>
             <Link to={`/product/${id}`} className={styles.card}>
                 {/* Visual Identity Layer */}
                 <div className={styles.imageSection}>
@@ -71,6 +103,35 @@ const ProductCard = ({ product }) => {
                     </div>
                 </div>
             </Link>
+
+            {/* Add to Cart Button / Quantity Controls */}
+            {itemQuantity > 0 ? (
+                <div className={styles.quantityControls}>
+                    <button
+                        className={styles.quantityBtn}
+                        onClick={handleDecrement}
+                        aria-label="Decrease quantity"
+                    >
+                        <Minus size={18} strokeWidth={3} />
+                    </button>
+                    <span className={styles.quantityDisplay}>{itemQuantity}</span>
+                    <button
+                        className={styles.quantityBtn}
+                        onClick={handleIncrement}
+                        aria-label="Increase quantity"
+                    >
+                        <Plus size={18} strokeWidth={3} />
+                    </button>
+                </div>
+            ) : (
+                <button
+                    className={styles.addToCartBtn}
+                    onClick={handleAddToCart}
+                    aria-label="Add to cart"
+                >
+                    <Plus size={20} strokeWidth={3} />
+                </button>
+            )}
         </div>
     );
 };
