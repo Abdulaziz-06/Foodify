@@ -4,15 +4,10 @@ import styles from './ProductCard.module.css';
 
 /**
  * Product Card Component
- * A compact preview of a food item, shown in the search results grid.
- * Displays the product image, name, brand, and its Nutri-Score grade.
+ * Compact preview of a food item for the search grid.
  */
 const ProductCard = ({ product }) => {
-    /**
-     * Smart Name Extraction
-     * Attempts to find the most descriptive name for the product.
-     * If the standard name is missing, it falls back to brand/category combinations.
-     */
+    // Extract the most descriptive name possible
     const getBestName = (p) => {
         const name = p.product_name || p.product_name_en || p.generic_name;
         if (name && name.trim() && name.toLowerCase() !== 'unknown') return name;
@@ -49,7 +44,7 @@ const ProductCard = ({ product }) => {
                             loading="lazy"
                         />
                     ) : (
-                        <div className={styles.noImage}>Pure Ingredients Inside</div>
+                        <div className={styles.noImage}></div>
                     )}
 
                     {/* Nutri-Score Overlay Badge */}

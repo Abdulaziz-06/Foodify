@@ -60,7 +60,7 @@ const VegSplash = ({ isVisible, onComplete }) => {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.5, type: "spring" }}
                         >
-                            Explore veg dishes from all restaurants
+                            Exploring veg products....
                         </motion.p>
                     </div>
                 </motion.div>

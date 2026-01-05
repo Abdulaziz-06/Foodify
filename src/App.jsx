@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import ProductDetails from './pages/ProductDetails';
 import Contact from './pages/Contact';
 import InteractiveBackground from './components/InteractiveBackground';
+import ScrollToTop from './components/ScrollToTop';
 import Footer from './components/Footer';
 import './styles/variables.css';
 
@@ -16,6 +17,7 @@ function App() {
       <ProductProvider>
         <InteractiveBackground />
         <Router>
+          <ScrollToTop />
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
             <Routes>
               <Route path="/" element={<Home />} />

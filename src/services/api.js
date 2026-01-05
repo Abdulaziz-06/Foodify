@@ -13,8 +13,7 @@ const api = axios.create({
 
 /**
  * Network Resilience Interceptor
- * Automatically retries failed requests (timeouts or network errors) up to 2 times
- * using an exponential backoff strategy to avoid overwhelming the server.
+ * Retries failed requests up to 2 times with exponential backoff.
  */
 api.interceptors.response.use(
     response => response,
@@ -43,11 +42,7 @@ api.interceptors.response.use(
 
 /**
  * Master Product Fetcher
- * This is the primary way to get products from Open Food Facts. It smartly handles:
- * - Direct Barcode Search: If the query is all numbers, it fetches that specific product.
- * - Text Search: General keyword search (e.g., "Pizza").
- * - Category Filtering: Limits results to specific food groups.
- * - Sorting & Pagination: Handles infinite scroll and relevance sorting.
+ * Handles barcode lookup, text search, filtering, and sorting.
  */
 export const getProducts = async (page = 1, limit = 24, searchQuery = '', category = '', sort = 'unique_scans_n', vegOnly = false, options = {}) => {
     // If the user enters a barcode (all digits), we prioritize a direct lookup for speed and accuracy.
@@ -68,7 +63,13 @@ export const getProducts = async (page = 1, limit = 24, searchQuery = '', catego
     // If we have a search query, we omit sort_by to let the API use its default relevance scoring,
     // unless a specific sort has been requested.
     const useRelevance = searchQuery && sort === 'unique_scans_n';
-    let url = `/cgi/search.pl?action=process&json=true&page=${page}&page_size=${limit}${useRelevance ? '' : `&sort_by=${sort}`}`;
+    let url = `/cgi/search.pl?action=process&json=true&page=${page}&page_size=${limit}${useRelevance ? '' : `&sort_by=${encodeURIComponent(sort)}`}`;
+
+    // Quality Filter: When sorting by Grade, restrict to products with completed nutrition facts
+    if (sort === 'nutrition_grades_tags') {
+        url += '&states_tags=en:nutrition-facts-completed';
+    }
+
     let tagIndex = 0;
 
     if (searchQuery) {
@@ -81,11 +82,37 @@ export const getProducts = async (page = 1, limit = 24, searchQuery = '', catego
     }
 
     if (vegOnly) {
-        url += `&tagtype_${tagIndex}=labels&tag_contains_${tagIndex}=contains&tag_${tagIndex}=en:vegetarian`;
+        // We use ingredients_analysis to get more accurate results than just labels
+        // as it's computed by Open Food Facts based on the ingredient list.
+        url += `&tagtype_${tagIndex}=ingredients_analysis&tag_contains_${tagIndex}=contains&tag_${tagIndex}=en:vegetarian`;
         tagIndex++;
     }
 
     const response = await api.get(url, options);
+
+    // Client-side Quality Filter
+    if (response.data && response.data.products) {
+        if (sort === 'nutrition_grades_tags') {
+            // Strict Grade Filtering: Only showing items with known grades (A-E)
+            response.data.products = response.data.products.filter(p =>
+                p.nutrition_grades_tags &&
+                ['a', 'b', 'c', 'd', 'e'].includes(p.nutrition_grades_tags[0])
+            );
+
+            // Client-Side Batch Sort: Ensure strictly A->B->C... for this page
+            response.data.products.sort((a, b) => {
+                const gradeA = a.nutrition_grades_tags[0];
+                const gradeB = b.nutrition_grades_tags[0];
+                return gradeA.localeCompare(gradeB);
+            });
+        } else {
+            // General Filtering: Remove products with missing names
+            response.data.products = response.data.products.filter(p =>
+                p.product_name && p.product_name.trim().length > 0
+            );
+        }
+    }
+
     return response.data;
 };
 

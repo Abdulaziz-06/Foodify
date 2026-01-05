@@ -8,7 +8,7 @@ const VegToggle = () => {
     const { vegOnly, setVegOnly } = useProducts();
     const [showSplash, setShowSplash] = React.useState(false);
 
-    // Trigger splash only when turning ON
+    // Show splash animation only when toggling ON
     const handleToggle = () => {
         const nextState = !vegOnly;
         setVegOnly(nextState);
@@ -64,7 +64,7 @@ const VegToggle = () => {
                 </button>
             </div>
 
-            {/* Zomato-style Splash */}
+            { }
             <VegSplash isVisible={showSplash} onComplete={() => setShowSplash(false)} />
         </>
     );
