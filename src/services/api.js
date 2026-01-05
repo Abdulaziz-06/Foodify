@@ -2,12 +2,15 @@ import axios from 'axios';
 
 /**
  * Configure Axios for Open Food Facts API
- * We use a Vite proxy to handle CORS and routing for /cgi, /api, and /category endpoints.
+ * In development: Uses Vite proxy for CORS handling
+ * In production: Calls Open Food Facts API directly
  */
 const api = axios.create({
+    baseURL: import.meta.env.PROD ? 'https://world.openfoodfacts.org' : '',
     timeout: 45000,
     headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'User-Agent': 'Foodify - WebApp - Version 1.0'
     }
 });
 
