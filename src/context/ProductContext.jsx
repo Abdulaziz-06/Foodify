@@ -25,7 +25,7 @@ export const ProductProvider = ({ children }) => {
     const [hasMore, setHasMore] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [sortBy, setSortBy] = useState('nutrition_grades_tags');
+    const [sortBy, setSortBy] = useState('unique_scans_n');
     const [vegOnly, setVegOnly] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
 
