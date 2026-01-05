@@ -6,7 +6,6 @@ import { getProducts, getCategories } from '../services/api';
  * Product Context
  * Provides global state management for food products across the whole application.
  * Using context ensures that search results and filter settings are preserved 
- * as the user navigates between pages.
  */
 const ProductContext = createContext();
 

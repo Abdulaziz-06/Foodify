@@ -4,8 +4,6 @@ import styles from './InteractiveBackground.module.css';
 
 /**
  * Animated Snowflake Component
- * Each snowflake is unique, with randomized speed, size, and starting position.
- * Memoized to prevent unnecessary re-renders during snow generation.
  */
 const Snowflake = () => {
     const style = useMemo(() => ({
@@ -21,17 +19,11 @@ const Snowflake = () => {
 
 /**
  * Interactive Background Component
- * Provides a rich, dynamic atmosphere for the application.
- * Features:
- * - Animated Snowfall: Gentle falling particles for a premium aesthetic.
- * - Reactive Ripples: Circles that react to mouse movements.
- * - Dot Grid: A subtle architectural pattern for structure.
- * - Dynamic Vignette: Enhances focus on the content based on the theme.
  */
 const InteractiveBackground = () => {
     const { theme } = useTheme();
 
-    // We generate 120 snowflakes for a dense, high-quality "snowstorm" effect.
+    // generating 120 snowflakes 
     const snowflakes = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
 
     // Pre-calculated layers for the reactive ripple rings.
@@ -40,8 +32,7 @@ const InteractiveBackground = () => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
     /**
-     * Mouse Interaction Listener
-     * Tracks coordinates to power the "magnet" effect on background rings.
+     * Mouse Interaction Listener for rings effects
      */
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -54,8 +45,6 @@ const InteractiveBackground = () => {
 
     /**
      * Dynamic Ripple Styling
-     * Calculates the scale and opacity of background rings based on their 
-     * distance from the user's cursor.
      */
     const getCircleStyle = (index, baseSize) => {
         const centerX = window.innerWidth / 2;

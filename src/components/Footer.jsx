@@ -4,8 +4,6 @@ import styles from './Footer.module.css';
 
 /**
  * Global Footer Component
- * Provides site-wide navigation, branding, and legal information.
- * Designed to be clean, full-width, and helpful for discovery.
  */
 const Footer = () => {
     const currentYear = new Date().getFullYear();

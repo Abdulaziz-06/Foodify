@@ -222,7 +222,7 @@ const Home = () => {
                     {/* Shelf End Feedback */}
                     {!hasMore && products.length > 0 && (
                         <div className={styles.endMessage}>
-                            You've reached the end of the aisle! 🍏
+                            You've reached the end of the aisle!
                         </div>
                     )}
                 </div>

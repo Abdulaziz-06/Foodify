@@ -104,7 +104,7 @@ const ProductDetails = () => {
 
     const name = getBestName(product);
     const rawGrade = product.nutrition_grades?.toLowerCase() || 'unknown';
-    // Map long strings to short display versions for the circle
+    // Map long strings to short display versions for the circle,(Here the API returns Unknown grade which overflows the circles)
     const displayGradeMap = {
         'not-applicable': 'N/A',
         'unknown': '?',
@@ -145,7 +145,7 @@ const ProductDetails = () => {
                     <ArrowLeft size={20} /> Back
                 </button>
 
-                {/* Banner: Only shown if data is significantly lacking */}
+                {/* Banner: shown if data is  lacking */}
                 {showWarningBanner && (
                     <motion.div
                         initial={{ opacity: 0, y: -10 }}

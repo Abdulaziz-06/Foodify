@@ -8,7 +8,7 @@ const VegToggle = () => {
     const { vegOnly, setVegOnly } = useProducts();
     const [showSplash, setShowSplash] = React.useState(false);
 
-    // Show splash animation only when toggling ON
+    // splash animation while toggling ON
     const handleToggle = () => {
         const nextState = !vegOnly;
         setVegOnly(nextState);

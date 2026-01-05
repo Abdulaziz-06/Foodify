@@ -6,7 +6,6 @@ import styles from './ProductCard.module.css';
 
 /**
  * Product Card Component
- * Compact preview of a food item for the search grid.
  */
 const ProductCard = ({ product }) => {
     const { addToCart, cartItems, updateQuantity } = useCart();

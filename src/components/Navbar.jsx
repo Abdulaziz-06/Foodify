@@ -10,7 +10,6 @@ import styles from './Navbar.module.css';
 /**
 /**
  * Navbar Component
- * Main navigation bar with branding, search access, and theme toggle.
  */
 const Navbar = () => {
     const { theme, toggleTheme } = useTheme();
@@ -92,17 +91,6 @@ const Navbar = () => {
                         <VegToggle />
                     </div>
 
-                    {/* Cart Button */}
-                    <button
-                        className={styles.cartButton}
-                        onClick={toggleCart}
-                        aria-label="Open Cart"
-                    >
-                        <ShoppingCart size={22} />
-                        {getTotalItems() > 0 && (
-                            <span className={styles.cartBadge}>{getTotalItems()}</span>
-                        )}
-                    </button>
 
                     <button
                         className={styles.themeToggle}
