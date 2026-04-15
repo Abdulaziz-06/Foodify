@@ -1,19 +1,29 @@
 import axios from 'axios';
 
 /**
- * Configure Axios for Open Food Facts API
- * In development: Uses Vite proxy for CORS handling
- * In production: Calls Open Food Facts API directly
+ * Foodify API Configuration
+ * 
+ * In development: Uses Vite proxy for CORS convenience.
+ * In production: Uses a custom Vercel Serverless Function (/api/proxy) 
+ * to bypass browser CORS restrictions and satisfy Open Food Facts User-Agent requirements.
  */
 const api = axios.create({
-    baseURL: import.meta.env.PROD ? 'https://world.openfoodfacts.org' : '',
+    baseURL: '', // Handled dynamically in interceptors or endpoint calls
     timeout: 30000,
     headers: {
-        'Accept': 'application/json',
-        // Note: Browsers forbid setting User-Agent. Open Food Facts recommends it,
-        // but for client-side requests, we must rely on the browser's default 
-        // or use a proxy. We remove manual setting to avoid CORS "unsafe header" errors.
+        'Accept': 'application/json'
     }
+});
+
+// Production Proxy Middleware
+api.interceptors.request.use((config) => {
+    if (import.meta.env.PROD) {
+        // In production, we wrap the URL in our serverless proxy
+        // We encode the full path (including query params) as a 'url' param
+        const originalUrl = config.url;
+        config.url = `/api/proxy?url=${encodeURIComponent(originalUrl)}`;
+    }
+    return config;
 });
 
 /**
