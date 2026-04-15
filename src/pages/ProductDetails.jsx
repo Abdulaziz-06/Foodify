@@ -13,6 +13,7 @@ import {
     ExternalLink
 } from 'lucide-react';
 import { getProductByBarcode } from '../services/api';
+import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/Navbar';
 import styles from './ProductDetails.module.css';
 
@@ -137,6 +138,12 @@ const ProductDetails = () => {
 
     return (
         <div className={styles.pageWrapper}>
+            <Helmet>
+                <title>{`${name} | Nutrition Facts | Foodify`}</title>
+                <meta name="description" content={`View nutritional information, ingredients, and Nutri-Score for ${name}. Brand: ${product.brands || 'Unknown'}.`} />
+                <meta property="og:title" content={`${name} - Nutritional Profile`} />
+                <meta property="og:image" content={product.image_front_url || product.image_url} />
+            </Helmet>
             <Navbar />
 
             <main className={styles.container}>

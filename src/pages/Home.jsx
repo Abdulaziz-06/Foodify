@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useProducts } from '../context/ProductContext';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Helmet } from 'react-helmet-async';
 import { Search, ChevronRight } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import SkeletonCard from '../components/SkeletonCard';
@@ -9,7 +10,6 @@ import Filters from '../components/Filters';
 import Navbar from '../components/Navbar';
 import styles from './Home.module.css';
 
-/**
 /**
  * Home Component
  * Landing page with hero section and infinite-scrolling product grid.
@@ -77,6 +77,13 @@ const Home = () => {
 
     return (
         <div className={styles.pageWrapper}>
+            <Helmet>
+                <title>Foodify | Discover Nutrition Facts & Ingredients</title>
+                <meta name="description" content="Search thousands of food products, scan barcodes, and uncover detailed nutrition facts and ingredients. Make smarter, healthier food choices with Foodify." />
+                <meta property="og:title" content="Foodify | Your Digital Nutrition Guide" />
+                <meta property="og:description" content="Instantly reveal what's inside your food. Scan barcodes and explore nutritional data for better health." />
+                <meta name="keywords" content="food database, nutrition facts, ingredients, barcode scanner, healthy eating, foodify" />
+            </Helmet>
             <Navbar />
 
             <main className={styles.container}>

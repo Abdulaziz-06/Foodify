@@ -7,10 +7,12 @@ import axios from 'axios';
  */
 const api = axios.create({
     baseURL: import.meta.env.PROD ? 'https://world.openfoodfacts.org' : '',
-    timeout: 45000,
+    timeout: 30000,
     headers: {
-        'Content-Type': 'application/json',
-        'User-Agent': 'Foodify - WebApp - Version 1.0'
+        'Accept': 'application/json',
+        // Note: Browsers forbid setting User-Agent. Open Food Facts recommends it,
+        // but for client-side requests, we must rely on the browser's default 
+        // or use a proxy. We remove manual setting to avoid CORS "unsafe header" errors.
     }
 });
 
@@ -95,25 +97,34 @@ export const getProducts = async (page = 1, limit = 24, searchQuery = '', catego
 
     // Client-side Quality Filter
     if (response.data && response.data.products) {
+        let filteredProducts = response.data.products;
+
         if (sort === 'nutrition_grades_tags') {
             // Strict Grade Filtering: Only showing items with known grades (A-E)
-            response.data.products = response.data.products.filter(p =>
+            filteredProducts = filteredProducts.filter(p =>
                 p.nutrition_grades_tags &&
                 ['a', 'b', 'c', 'd', 'e'].includes(p.nutrition_grades_tags[0])
             );
 
             // Client-Side Batch Sort: Ensure strictly A->B->C... for this page
-            response.data.products.sort((a, b) => {
+            filteredProducts.sort((a, b) => {
                 const gradeA = a.nutrition_grades_tags[0];
                 const gradeB = b.nutrition_grades_tags[0];
                 return gradeA.localeCompare(gradeB);
             });
         } else {
             // General Filtering: Remove products with missing names
-            response.data.products = response.data.products.filter(p =>
+            filteredProducts = filteredProducts.filter(p =>
                 p.product_name && p.product_name.trim().length > 0
             );
         }
+        
+        // Return the filtered products, total count, and raw length for pagination logic
+        return {
+            ...response.data,
+            products: filteredProducts,
+            _rawCount: response.data.products ? response.data.products.length : 0
+        };
     }
 
     return response.data;
@@ -135,7 +146,7 @@ export const getProductByBarcode = async (barcode) => {
  */
 export const getCategories = async () => {
     try {
-        const response = await api.get('/categories.json');
+        const response = await api.get('/facets/categories.json');
         if (response.data && response.data.tags) {
             return response.data.tags
                 .filter(tag => tag.products > 5000)

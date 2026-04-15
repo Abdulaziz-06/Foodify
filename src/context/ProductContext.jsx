@@ -85,8 +85,8 @@ export const ProductProvider = ({ children }) => {
             // If it's a new search, we might want to clear products visually beforehand
             // But we already do that in the state setters for better UX
 
-            // If sorting by Grade, we need a larger batch (100) because we strictly filter out 
-            const limit = sortBy === 'nutrition_grades_tags' ? 100 : 24;
+            // We use a fixed limit of 24 for standard fetches.
+            const limit = 24;
 
             const data = await getProducts(
                 targetPage,
@@ -100,6 +100,11 @@ export const ProductProvider = ({ children }) => {
 
             // ONLY process results if this is still the active request
             if (abortController.current === currentController) {
+                // Determine if there are more results based on raw API response length
+                const rawCount = data._rawCount !== undefined ? data._rawCount : (data.products ? data.products.length : 0);
+                const hasMoreResults = rawCount >= limit;
+                setHasMore(hasMoreResults);
+
                 if (data.products && data.products.length > 0) {
                     setProducts(prev => {
                         const merged = isNewSearch ? data.products : [...prev, ...data.products];
@@ -115,12 +120,14 @@ export const ProductProvider = ({ children }) => {
                         }
                         return merged;
                     });
-                    // If we got fewer than requested, we're likely done
-                    if (data.products.length < 24) setHasMore(false);
-                    else setHasMore(true);
                 } else {
                     if (isNewSearch) setProducts([]);
-                    setHasMore(false);
+                    
+                    // If we got products from API but they were all filtered out, 
+                    // and we know there might be more, we should trigger a load of the next page.
+                    if (hasMoreResults) {
+                        setPage(prev => prev + 1);
+                    }
                 }
             }
         } catch (err) {

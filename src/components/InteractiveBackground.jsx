@@ -22,12 +22,21 @@ const Snowflake = () => {
  */
 const InteractiveBackground = () => {
     const { theme } = useTheme();
+    const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        setPrefersReducedMotion(mediaQuery.matches);
+        const handler = (e) => setPrefersReducedMotion(e.matches);
+        mediaQuery.addEventListener('change', handler);
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, []);
 
     // generating 120 snowflakes 
-    const snowflakes = useMemo(() => Array.from({ length: 120 }, (_, i) => i), []);
+    const snowflakes = useMemo(() => Array.from({ length: prefersReducedMotion ? 0 : 120 }, (_, i) => i), [prefersReducedMotion]);
 
     // Pre-calculated layers for the reactive ripple rings.
-    const circles = useMemo(() => Array.from({ length: 14 }, (_, i) => i), []);
+    const circles = useMemo(() => Array.from({ length: prefersReducedMotion ? 0 : 14 }, (_, i) => i), [prefersReducedMotion]);
 
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 

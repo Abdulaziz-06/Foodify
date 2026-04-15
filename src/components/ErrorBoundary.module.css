@@ -1,0 +1,95 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background: var(--bg);
+}
+
+.container {
+    max-width: 500px;
+    width: 100%;
+    padding: 3rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 2rem;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.icon {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: center;
+}
+
+.title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 1rem;
+}
+
+.message {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.retryBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.retryBtn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+
+.homeLink {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-hover);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.debug {
+    margin-top: 2rem;
+    text-align: left;
+    background: #000;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    overflow: auto;
+}
+
+.debug summary {
+    cursor: pointer;
+    color: #ff4444;
+    margin-bottom: 0.5rem;
+}
