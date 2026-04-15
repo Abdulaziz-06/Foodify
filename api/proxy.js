@@ -1,7 +1,5 @@
-import axios from 'axios';
-
 export default async function handler(req, res) {
-    // Add CORS headers to allow the frontend to call this function
+    // Standard CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -18,28 +16,34 @@ export default async function handler(req, res) {
     const { url } = req.query;
 
     if (!url) {
-        return res.status(400).json({ error: 'URL parameter is required' });
+        return res.status(400).json({ error: 'Missing url parameter' });
     }
 
     try {
-        // Construct the full Open Food Facts URL.
-        // The URL passed from the frontend will be relative (e.g., /api/v0/product/...)
-        const targetUrl = `https://world.openfoodfacts.org${url}`;
+        // Ensure url starts with a slash
+        const path = url.startsWith('/') ? url : `/${url}`;
+        const targetUrl = `https://world.openfoodfacts.org${path}`;
 
-        const response = await axios.get(targetUrl, {
+        console.log(`Forwarding request to: ${targetUrl}`);
+
+        const response = await fetch(targetUrl, {
+            method: 'GET',
             headers: {
-                // Open Food Facts requirements: Identify your app with a clear User-Agent
-                'User-Agent': 'Foodify - WebApp - Version 1.0 - www.foodify.app',
+                // Highly specific User-Agent as requested by Open Food Facts docs
+                // Format: AppName/Version (WebsiteUrl)
+                'User-Agent': 'Foodify/1.1 (https://fooodify.vercel.app)',
                 'Accept': 'application/json'
-            },
-            timeout: 10000
+            }
         });
 
-        res.status(200).json(response.data);
+        const data = await response.json();
+
+        // Relay the status code and data
+        res.status(response.status).json(data);
     } catch (error) {
-        console.error('Proxy Error:', error.message);
-        res.status(error.response?.status || 500).json({
-            error: 'Failed to fetch from Open Food Facts',
+        console.error('Proxy Error Details:', error);
+        res.status(500).json({
+            error: 'Proxy Error',
             message: error.message
         });
     }

@@ -18,10 +18,21 @@ const api = axios.create({
 // Production Proxy Middleware
 api.interceptors.request.use((config) => {
     if (import.meta.env.PROD) {
-        // In production, we wrap the URL in our serverless proxy
-        // We encode the full path (including query params) as a 'url' param
-        const originalUrl = config.url;
+        // In production, we route through our Serverless Function proxy
+        // to bypass CORS and set safe User-Agent headers.
+        let originalUrl = config.url;
+        
+        // Remove any double slashes if they occur
+        originalUrl = originalUrl.startsWith('/') ? originalUrl : `/${originalUrl}`;
+        
+        // Build the proxy URL. We use a relative path so it works on any Vercel domain.
         config.url = `/api/proxy?url=${encodeURIComponent(originalUrl)}`;
+        
+        // Ensure we don't have a baseURL prepended that breaks the relative proxy path
+        config.baseURL = '';
+    } else {
+        // In development, Vite handles the proxy via vite.config.js
+        config.baseURL = '';
     }
     return config;
 });
