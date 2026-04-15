@@ -1,12 +1,11 @@
+import axios from 'axios';
+
 export default async function handler(req, res) {
-    // Standard CORS headers
+    // Basic Security & CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-    );
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Accept, Content-Type');
 
     if (req.method === 'OPTIONS') {
         res.status(200).end();
@@ -20,31 +19,32 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Ensure url starts with a slash
+        // Ensure the path is valid
         const path = url.startsWith('/') ? url : `/${url}`;
         const targetUrl = `https://world.openfoodfacts.org${path}`;
 
-        console.log(`Forwarding request to: ${targetUrl}`);
+        console.log('Proxying to:', targetUrl);
 
-        const response = await fetch(targetUrl, {
-            method: 'GET',
+        const response = await axios.get(targetUrl, {
             headers: {
-                // Highly specific User-Agent as requested by Open Food Facts docs
-                // Format: AppName/Version (WebsiteUrl)
-                'User-Agent': 'Foodify/1.1 (https://fooodify.vercel.app)',
+                'User-Agent': 'Foodify/1.1 (https://fooodify.vercel.app; support@foodify.com)',
                 'Accept': 'application/json'
-            }
+            },
+            timeout: 15000,
+            validateStatus: false // Allow us to catch non-200 responses manually
         });
 
-        const data = await response.json();
+        // Forward the response
+        res.status(response.status).json(response.data);
 
-        // Relay the status code and data
-        res.status(response.status).json(data);
     } catch (error) {
-        console.error('Proxy Error Details:', error);
+        console.error('Serverless Proxy Crash:', error.message);
+        
+        // Return a structured error so the frontend doesn't just see "500"
         res.status(500).json({
-            error: 'Proxy Error',
-            message: error.message
+            error: 'Internal Proxy Error',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 }
